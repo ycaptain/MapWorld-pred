@@ -108,6 +108,38 @@ Config files are in `.json` format:
 }
 ```
 
+### Using config files
+
+Modify the configurations in `.json` config files, then run:
+
+```bash
+python train.py --config config.json
+```
+
+### Resuming from checkpoints
+
+You can resume from a previously saved checkpoint by:
+
+```bash
+python train.py --resume path/to/checkpoint
+```
+
+### Using Multiple GPU
+
+You can enable multi-GPU training by setting `n_gpu` argument of the config file to larger number.
+If configured to use smaller number of gpu than available, first n devices will be used by default.
+Specify indices of available GPUs by cuda environmental variable.
+
+```bash
+python train.py --device 2,3 -c config.json
+```
+
+This is equivalent to
+
+```bash
+CUDA_VISIBLE_DEVICES=2,3 python train.py -c config.py
+```
+
 ### Initialize Workspace
 
 ### Push Your Code

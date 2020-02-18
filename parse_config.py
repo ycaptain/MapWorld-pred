@@ -4,8 +4,8 @@ from pathlib import Path
 from functools import reduce, partial
 from operator import getitem
 from datetime import datetime
-from logger import setup_logging
-from utils import read_json, write_json
+from src.logger import setup_logging
+from src.utils import read_json, write_json
 
 
 class ConfigParser:
@@ -40,7 +40,7 @@ class ConfigParser:
         write_json(self.config, self.save_dir / 'config.json')
 
         # configure logging module
-        setup_logging(self.log_dir)
+        setup_logging(self.log_dir, self.config.get("log_config", 'logger/logger_config.json'))
         self.log_levels = {
             0: logging.WARNING,
             1: logging.INFO,
@@ -67,15 +67,18 @@ class ConfigParser:
             assert args.config is not None, msg_no_cfg
             resume = None
             cfg_fname = Path(args.config)
-        
-        config = read_json(cfg_fname)
-        if args.config and resume:
-            # update new config for fine-tuning
-            config.update(read_json(args.config))
-
-        # parse custom cli options into dictionary
-        modification = {opt.target : getattr(args, _get_opt_name(opt.flags)) for opt in options}
+        config = cls.from_file(cfg_fname, resume, args.config)
+        modification = {opt.target: getattr(args, _get_opt_name(opt.flags)) for opt in options}
         return cls(config, resume, modification)
+
+    @classmethod
+    def from_file(self, cfg_fname, resume=False, resume_conf=None):
+        config = read_json(cfg_fname)
+        if resume_conf and resume:
+            # update new config for fine-tuning
+            config.update(read_json(resume_conf))
+        return config
+        # parse custom cli options into dictionary
 
     def init_obj(self, name, module, *args, **kwargs):
         """

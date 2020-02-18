@@ -2,10 +2,16 @@ import argparse
 import collections
 import torch
 import numpy as np
+import os
+import sys
+
+src_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "src")
+sys.path.insert(0, src_dir)
+
 import data_loader.data_loaders as module_data
 import model.loss as module_loss
 import model.metric as module_metric
-import model.model as module_arch
+from model import model as module_arch
 from parse_config import ConfigParser
 from trainer import Trainer
 

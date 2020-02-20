@@ -4,8 +4,8 @@ from pathlib import Path
 from functools import reduce, partial
 from operator import getitem
 from datetime import datetime
-from src.logger import setup_logging
-from src.utils import read_json, write_json
+from logger import setup_logging
+from utils import read_json, write_json
 
 
 class ConfigParser:

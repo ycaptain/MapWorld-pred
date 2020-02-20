@@ -1,0 +1,20 @@
+{
+   "name": "GeoPreprocessorTest",
+   "n_gpu": 1,
+   "log_config": "src/logger/logger_config.json",
+   "data_loader": {
+        "type": "GeoDataLoader",
+        "args":{
+            "data_name": "AOI_3_Paris_Train",
+            "data_dir": "data/FYPData/spacenet",
+            "colors": {
+              "building": [255, 0, 0],
+              "road": [0, 0, 255],
+              "ignore": [0, 0, 0]
+            }
+        }
+    },
+    "trainer": {
+      "save_dir": "saved/"
+    }
+}

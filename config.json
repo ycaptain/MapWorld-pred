@@ -1,7 +1,7 @@
 {
     "name": "Mnist_LeNet",
     "n_gpu": 1,
-    "log_config": "logger/logger_config.json",
+    "log_config": "src/logger/logger_config.json",
     "arch": {
         "type": "MnistModel",
         "args": {}

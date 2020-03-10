@@ -44,7 +44,7 @@ class GeoTestCase(unittest.TestCase):
         building_jsondir = self.datadir / self.data_name / "geojson" / "buildings"
         geojson_util = self.util.GeoJsonUtil()
         f = geojson_util.load_geojson(building_jsondir / "buildings_AOI_3_Paris_img20.geojson")
-        res_img = geojson_util.render(img_util.read_meta(timg), f.GetLayer())
+        res_img = geojson_util.render(img_util.read_meta(timg), f.GetLayer(), self.config['data_loader']['args']["colors"]["building"])
         img_util.preview(res_img)
 
 

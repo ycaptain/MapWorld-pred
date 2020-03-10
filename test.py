@@ -5,10 +5,10 @@ from tqdm import tqdm
 src_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "src")
 sys.path.insert(0, src_dir)
 
-import data_loader.data_loaders as module_data
-import model.loss as module_loss
-import model.metric as module_metric
-import model.model as module_arch
+import data_loader.mnist_loaders as module_data
+import model.mnist.loss as module_loss
+import model.mnist.metric as module_metric
+from model.mnist import model as module_arch
 from parse_config import ConfigParser
 
 

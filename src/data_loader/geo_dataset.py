@@ -1,6 +1,8 @@
-from utils import util_geo
+import torch
+
+import numpy as np
 from torchvision.datasets import VisionDataset
-from PIL import Image
+import os
 
 
 class GeoDataset(VisionDataset):
@@ -14,13 +16,22 @@ class GeoDataset(VisionDataset):
             target_transform (callable, optional): A function/transform that takes in the
                 target and transforms it.
         """
-    cache = list()
-    crs = dict()
-    meta = None
-    cls_render = None
+    files = []
+
+    def _set_files(self):
+        """
+        Create a file path/image id list.
+        """
+        raise NotImplementedError()
+
+    def _load_data(self, image_id):
+        """
+        Load the image and label in numpy.ndarray
+        """
+        raise NotImplementedError()
 
     def __len__(self):
-        return len(self.data)
+        return len(self.files)
 
     def __getitem__(self, index):
         """
@@ -31,22 +42,30 @@ class GeoDataset(VisionDataset):
         """
 
         # TODO: read img file
-        img, target = self.data[index], int(self.targets[index])
-
-        img = Image.fromarray(img.numpy(), mode='L')
+        image_id, image, label = self._load_data(index)
 
         if self.transform is not None:
-            img = self.transform(img)
+            img = self.transform(image)
 
         if self.target_transform is not None:
-            target = self.target_transform(target)
+            target = self.target_transform(label)
 
-        return img, target
+        return image_id, image.astype(np.float32), label.astype(np.int64)
 
-    def __init__(self, root, train=True, transform=None, target_transform=None):
+    @property
+    def processed_folder(self):
+        return os.path.join(self.root, 'processed')
+
+    def __init__(self, root, colors, train=True, transform=None, target_transform=None):
         super(GeoDataset, self).__init__(root, transform=transform,
                                          target_transform=target_transform)
-        self.data_dir = root
-        self.cls_render = util_geo.GeoLabelUtil()
-        self.data = dict()
-        self.targets = dict()
+        self.train = train  # training set or test set
+        self.colors = colors
+        self.files = []
+        self._set_files()
+
+    def __repr__(self):
+        fmt_str = "Dataset: " + self.__class__.__name__ + "\n"
+        fmt_str += "    # data: {}\n".format(self.__len__())
+        fmt_str += "    Root: {}".format(self.root)
+        return fmt_str

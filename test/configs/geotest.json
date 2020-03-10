@@ -7,9 +7,9 @@
         "args":{
             "data_name": "AOI_3_Paris_Train",
             "data_dir": "data/FYPData/spacenet",
+
             "colors": {
               "building": [255, 0, 0],
-              "road": [0, 0, 255],
               "ignore": [0, 0, 0]
             }
         }

@@ -1,6 +1,7 @@
 import numpy as np
 from osgeo import gdal, ogr
 from PIL import Image
+import threading
 
 
 class GeoLabelUtil:
@@ -69,8 +70,6 @@ class GeoLabelUtil:
 
     class GeoJsonUtil:
 
-        color_map = dict()
-
         def load_geojson(self, filename):
             # Ref: https://pcjericks.github.io/py-gdalogr-cookbook/layers.html
             # https://www.osgeo.cn/python_gdal_utah_tutorial/ch05.html
@@ -78,14 +77,48 @@ class GeoLabelUtil:
             return lfile
 
         @staticmethod
-        def render(meta, layer):
+        def render(meta, layer, color=None):
+            if color is None:
+                color = [255, 255, 255]
             x = meta["RasterXSize"]
             y = meta["RasterYSize"]
             # https://www.programcreek.com/python/example/101827/gdal.RasterizeLayer
             driver = gdal.GetDriverByName('MEM')
-            dst_ds = driver.Create("", x, y, 1, gdal.GDT_UInt16)
+            dst_ds = driver.Create("", x, y, 3, gdal.GDT_Byte)
             dst_ds.SetGeoTransform(meta["GeoTransform"])
             dst_ds.SetProjection(meta["Projection"])
-            gdal.RasterizeLayer(dst_ds, [1], layer, None)
+            gdal.RasterizeLayer(dst_ds, [1, 2, 3], layer, burn_values=color)
             img = dst_ds.ReadAsArray()
+            img = np.moveaxis(img, 0, -1)
             return img
+
+    class RenderThread(threading.Thread):
+        def __init__(self, img_src, tg_img, geojson_src=None, ras_img=None, cols=None):
+            """
+            Args: img_src: Source image path (Raw satellite image)
+                  tg_img: target image (RGB) output path
+                  geojson_src:
+                  resimg_path: raster image (geojson mask) output path
+            """
+            threading.Thread.__init__(self)
+            util = GeoLabelUtil()
+            self.util = util.GeoImgUtil()
+            self.img_src = img_src
+            self.tg_img = tg_img
+            if geojson_src is not None and ras_img is not None:
+                self.geojson_src = geojson_src
+                self.ras_img = ras_img
+                self.geojson_util = util.GeoJsonUtil()
+                self.do_raster = True
+                self.colors = cols
+
+        def run(self):
+            img = self.util.load_geotiff(self.img_src)
+            rimg = self.util.normalize_img(img.ReadAsArray())
+            self.util.save(rimg, self.tg_img)
+            print("RGB saved to", self.tg_img)
+            if self.do_raster:
+                f_load = self.geojson_util.load_geojson(self.geojson_src)
+                res = self.geojson_util.render(self.util.read_meta(img), f_load.GetLayer(), self.colors["building"])
+                self.util.save(res, self.ras_img)
+                print("Mask saved to", self.ras_img)

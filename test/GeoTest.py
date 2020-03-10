@@ -15,12 +15,7 @@ from utils import util_geo
 class GeoTestCase(unittest.TestCase):
     config = None
     loader = None
-    meta = {
-        "height": 650,
-        "width": 650,
-        "channelsNum": 3,
-        "origin": (2.186411399970000, 49.051215900000003)
-    }
+    meta = None
 
     @classmethod
     def setUpClass(cls):
@@ -33,18 +28,24 @@ class GeoTestCase(unittest.TestCase):
 
     def test_img(self):
         imgdir = self.datadir / self.data_name / "RGB-PanSharpen"
-        img_util = self.util.GeoImgUtil(imgdir)
-        timg = img_util.load_geotiff("RGB-PanSharpen_AOI_3_Paris_img19.tif")
-        img_util.preview(timg)
+        img_util = self.util.GeoImgUtil()
+        timg = img_util.load_geotiff(imgdir / "RGB-PanSharpen_AOI_3_Paris_img20.tif")
+        img = img_util.normalize_img(timg.ReadAsArray())
+        print("Metadata: ", img_util.read_meta(timg))
+        img_util.preview(img)
 
     def test_geojson(self):
+        imgdir = self.datadir / self.data_name / "RGB-PanSharpen"
+        img_util = self.util.GeoImgUtil()
+        timg = img_util.load_geotiff(imgdir / "RGB-PanSharpen_AOI_3_Paris_img20.tif")
+        # save_dir = Path(self.config["trainer"]["save_dir"]) / "data" / "labels"
+        # save_dir.mkdir(parents=True, exist_ok=True)
+
         building_jsondir = self.datadir / self.data_name / "geojson" / "buildings"
-        json_util = self.util.GeoJsonUtil(building_jsondir)
-        f = json_util.load_geojson("buildings_AOI_3_Paris_img19.geojson")
-        # print(loader.cache)
-        json_util.set_metadata(self.meta)
-        # loader.render("test.png", root_dir)
-        json_util.render(None, None)  # Preview
+        geojson_util = self.util.GeoJsonUtil()
+        f = geojson_util.load_geojson(building_jsondir / "buildings_AOI_3_Paris_img20.geojson")
+        res_img = geojson_util.render(img_util.read_meta(timg), f.GetLayer())
+        img_util.preview(res_img)
 
 
 if __name__ == '__main__':

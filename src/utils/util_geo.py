@@ -1,24 +1,35 @@
-import cv2
 import numpy as np
-import os
-from . import read_json
-from osgeo import gdal, osr, ogr
+from osgeo import gdal, ogr
+from PIL import Image
 
 
 class GeoLabelUtil:
 
     class GeoImgUtil:
         img = None
-
-        def __init__(self, data_dir):
-            self.data_dir = data_dir
+        meta = None
 
         def load_geotiff(self, filename):
-            img = gdal.Open(os.path.join(self.data_dir, filename)).ReadAsArray()
-            self.img = self.normalize_img(img)
+            img = gdal.Open(str(filename))
+            self.meta = self.read_meta(img)
+            self.img = img
             return self.img
 
-        def normalize_img(self, img, xtimes=2.5):
+        def get_meta(self):
+            return self.meta
+
+        @staticmethod
+        def read_meta(img):
+            meta = img.GetMetadata()
+            meta["RasterXSize"] = img.RasterXSize
+            meta["RasterYSize"] = img.RasterYSize
+            meta["RasterCount"] = img.RasterCount
+            meta["GeoTransform"] = img.GetGeoTransform()
+            meta["Projection"] = img.GetProjection()
+            return meta
+
+        @staticmethod
+        def normalize_img(img, xtimes=2.5):
             """
             Image data before normalize, 3 channels shaped as (650,650,3):
             [[365 367 359...(x650)], [368 361 367...]...(x650)]
@@ -44,53 +55,37 @@ class GeoLabelUtil:
             img = (img - mins) / (maxs - mins) * 255
             img = np.uint8(np.clip(img, 0, 255, img))
 
-            self.img = img
             return img
 
         @staticmethod
         def preview(img):
-            cv2.imshow('Preview', img)
-            cv2.waitKey(0)
-            cv2.destroyAllWindows()
+            Image.fromarray(img).show()
 
         @staticmethod
-        def save(img, filename, path):
-            cv2.imwrite(os.path.join(path, filename), img)
+        def save(img, filename):
+            dist_img = Image.fromarray(img)
+            dist_img = dist_img.convert(mode='RGB')
+            dist_img.save(str(filename))
 
     class GeoJsonUtil:
-        crs = ""
-        cache = list()
-        meta = None
-        img = None
 
-        def __init__(self, data_dir):
-            self.data_dir = data_dir
+        color_map = dict()
 
-        def load_geojson(self, name):
-            raw_json = read_json(os.path.join(self.data_dir, name))
-            self.crs = raw_json.get("crs")
-            features = raw_json.get("features")
-            self.cache = self.cache + features
-            return raw_json
+        def load_geojson(self, filename):
+            # Ref: https://pcjericks.github.io/py-gdalogr-cookbook/layers.html
+            # https://www.osgeo.cn/python_gdal_utah_tutorial/ch05.html
+            lfile = ogr.Open(str(filename))
+            return lfile
 
-        def set_metadata(self, meta):
-            self.meta = meta
-
-        def render(self, filename, path):
-            assert self.meta is not None
-            assert "width" in self.meta and "height" in self.meta and "channelsNum" in self.meta
-            # Check metadata before we can render
-            self.create((self.meta["height"], self.meta["width"], self.meta["channelsNum"]))
-            for feature in self.cache:
-                self.draw_item(feature)
-            if filename is None or path is None:
-                GeoLabelUtil.GeoImgUtil.preview(self.img)
-            else:
-                self.save(self.img, filename, path)
-
-        def create(self, prop):
-            self.img = np.zeros(prop, dtype="uint8")
-
-        def draw_item(self, item):
-            pass
-
+        @staticmethod
+        def render(meta, layer):
+            x = meta["RasterXSize"]
+            y = meta["RasterYSize"]
+            # https://www.programcreek.com/python/example/101827/gdal.RasterizeLayer
+            driver = gdal.GetDriverByName('MEM')
+            dst_ds = driver.Create("", x, y, 1, gdal.GDT_UInt16)
+            dst_ds.SetGeoTransform(meta["GeoTransform"])
+            dst_ds.SetProjection(meta["Projection"])
+            gdal.RasterizeLayer(dst_ds, [1], layer, None)
+            img = dst_ds.ReadAsArray()
+            return img

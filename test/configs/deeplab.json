@@ -28,7 +28,38 @@
             }
         }
     },
+    "loss": {
+        "type": "SegmentationLosses",
+        "args": {
+            "mode": "ce"
+        }
+    },
+    "metrics": [
+        "seg_scores"
+    ],
+    "optimizer": {
+        "type": "SGD",
+        "args":{
+            "lr": 0.001
+        }
+    },
+    "lr_scheduler": {
+        "type": "PolynomialLR",
+        "args": {
+            "step_size": 10,
+            "iter_max": 20000,
+            "power": 0.9
+        }
+    },
     "trainer": {
-      "save_dir": "saved/"
+        "epochs": 100,
+        "save_dir": "saved/",
+        "save_period": 1,
+        "verbosity": 2,
+
+        "monitor": "min val_loss",
+        "early_stop": 10,
+
+        "tensorboard": false
     }
 }

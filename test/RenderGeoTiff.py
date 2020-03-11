@@ -31,5 +31,6 @@ if __name__ == '__main__':
     for f in os.listdir(img_dir):
         img_index = re_img_index.search(f).group(0)
         geojson_fname = "buildings_%s%s.geojson" % (data_name.replace("Train", "").replace("Test", ""), img_index)
-        thread = util_geo.GeoLabelUtil.RenderThread(img_dir / f, img_save_dir / f, building_geojson_dir / geojson_fname, raster_save_dir / f, colors)
+        thread = util_geo.GeoLabelUtil.RenderThread(img_dir / f, img_save_dir / str(f).replace(".tif", ".png"),
+                 building_geojson_dir / geojson_fname, raster_save_dir / str(f).replace(".tif", ".png"), colors)
         thread.run()

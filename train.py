@@ -9,8 +9,7 @@ src_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "src")
 sys.path.insert(0, src_dir)
 
 import data_loader as ds
-import model.mnist.loss as module_loss
-import model.mnist.metric as module_metric
+import model.metric_entry as module_metric
 import model as module_arch
 from parse_config import ConfigParser
 from trainer import Trainer
@@ -36,14 +35,15 @@ def main(config):
     logger.info(model)
 
     # get function handles of loss and metrics
-    criterion = getattr(module_loss, config['loss'])
-    metrics = [getattr(module_metric, met) for met in config['metrics']]
+    # criterion = getattr(module_loss, config['loss'])
+    criterion = config.init_obj('loss', module_arch.loss_entry).build_loss()
+    metrics = [getattr(module_arch.metric_entry, met) for met in config['metrics']]
 
     # build optimizer, learning rate scheduler. delete every lines containing lr_scheduler for disabling scheduler
     trainable_params = filter(lambda p: p.requires_grad, model.parameters())
     optimizer = config.init_obj('optimizer', torch.optim, trainable_params)
 
-    lr_scheduler = config.init_obj('lr_scheduler', torch.optim.lr_scheduler, optimizer)
+    lr_scheduler = config.init_obj('lr_scheduler', module_arch.lr_entry, optimizer)
 
     trainer = Trainer(model, criterion, metrics, optimizer,
                       config=config,

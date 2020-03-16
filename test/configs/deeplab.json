@@ -17,21 +17,22 @@
         "args":{
             "data_name": "AOI_3_Paris_Train",
             "data_dir": "data/FYPData/spacenet",
-            "batch_size": 128,
+            "batch_size": 100,
             "shuffle": true,
             "validation_split": 0.1,
             "num_workers": 2,
-            "colors": {
-                "building": [255, 0, 0],
-                "road": [0, 0, 255],
-                "ignore": [0, 0, 0]
-            }
+            "colors": [
+                {"ignore": [0, 0, 0]},
+                {"building": [255, 0, 0]},
+                {"road": [0, 0, 255]}
+            ]
         }
     },
     "loss": {
         "type": "SegmentationLosses",
         "args": {
-            "mode": "ce"
+            "mode": "ce",
+            "ignore_index": 255
         }
     },
     "metrics": [

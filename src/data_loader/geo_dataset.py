@@ -1,8 +1,7 @@
-import torch
-
 import numpy as np
 from torchvision.datasets import VisionDataset
 import os
+from pathlib import Path
 
 
 class GeoDataset(VisionDataset):
@@ -54,7 +53,7 @@ class GeoDataset(VisionDataset):
 
     @property
     def processed_folder(self):
-        return os.path.join(self.root, 'processed')
+        return Path(os.path.join(self.root, 'processed'))
 
     def __init__(self, root, colors, train=True, transform=None, target_transform=None):
         super(GeoDataset, self).__init__(root, transform=transform,

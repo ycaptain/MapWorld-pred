@@ -5,7 +5,7 @@ from base import BaseTrainer
 from utils import inf_loop, MetricTracker
 
 
-class Trainer(BaseTrainer):
+class MnistTrainer(BaseTrainer):
     """
     Trainer class
     """

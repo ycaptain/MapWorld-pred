@@ -1,8 +1,7 @@
-import torch
-
 import numpy as np
 from torchvision.datasets import VisionDataset
 import os
+from pathlib import Path
 
 
 class GeoDataset(VisionDataset):
@@ -40,8 +39,6 @@ class GeoDataset(VisionDataset):
             Returns:
             tuple: (image, target) where target is index of the target class.
         """
-
-        # TODO: read img file
         image_id, image, label = self._load_data(index)
 
         if self.transform is not None:
@@ -50,11 +47,11 @@ class GeoDataset(VisionDataset):
         if self.target_transform is not None:
             target = self.target_transform(label)
 
-        return image_id, image.astype(np.float32), label.astype(np.int64)
+        return image.astype(np.float32), label.astype(np.int64)
 
     @property
     def processed_folder(self):
-        return os.path.join(self.root, 'processed')
+        return Path(os.path.join(self.root, 'processed'))
 
     def __init__(self, root, colors, train=True, transform=None, target_transform=None):
         super(GeoDataset, self).__init__(root, transform=transform,

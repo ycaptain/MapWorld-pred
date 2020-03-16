@@ -17,18 +17,50 @@
         "args":{
             "data_name": "AOI_3_Paris_Train",
             "data_dir": "data/FYPData/spacenet",
-            "batch_size": 128,
+            "batch_size": 2,
             "shuffle": true,
             "validation_split": 0.1,
             "num_workers": 2,
-            "colors": {
-                "building": [255, 0, 0],
-                "road": [0, 0, 255],
-                "ignore": [0, 0, 0]
-            }
+            "colors": [
+                {"ignore": [0, 0, 0]},
+                {"building": [255, 0, 0]},
+                {"road": [0, 0, 255]}
+            ]
+        }
+    },
+    "loss": {
+        "type": "SegmentationLosses",
+        "args": {
+            "mode": "ce",
+            "ignore_index": 255
+        }
+    },
+    "metrics": [
+        "seg_scores"
+    ],
+    "optimizer": {
+        "type": "SGD",
+        "args":{
+            "lr": 0.001
+        }
+    },
+    "lr_scheduler": {
+        "type": "PolynomialLR",
+        "args": {
+            "step_size": 10,
+            "iter_max": 20000,
+            "power": 0.9
         }
     },
     "trainer": {
-      "save_dir": "saved/"
+        "type": "DeeplabTrainer",
+        "args": {},
+        "epochs": 100,
+        "save_dir": "saved/",
+        "save_period": 1,
+        "verbosity": 2,
+        "monitor": "min val_loss",
+        "early_stop": 10,
+        "tensorboard": false
     }
 }

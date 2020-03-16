@@ -14,9 +14,9 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 try:
-    from encoding.nn import SyncBatchNorm
+    from trainer.sync_batchnorm.batchnorm import SynchronizedBatchNorm2d
 
-    _BATCH_NORM = SyncBatchNorm
+    _BATCH_NORM = SynchronizedBatchNorm2d
 except:
     _BATCH_NORM = nn.BatchNorm2d
 

@@ -1,11 +1,14 @@
+import os
+import re
+
 import numpy as np
 from osgeo import gdal, ogr
 from PIL import Image
 import threading
+from pathlib import Path
 
 
 class GeoLabelUtil:
-
     class GeoImgUtil:
         img = None
         meta = None
@@ -63,10 +66,17 @@ class GeoLabelUtil:
             Image.fromarray(img).show()
 
         @staticmethod
-        def save(img, filename):
+        def save_rgb(img, filename):
             dist_img = Image.fromarray(img)
             dist_img = dist_img.convert(mode='RGB')
             dist_img.save(str(filename))
+
+        # @staticmethod
+        # def save_indexed(img, classes, filename):
+        #     dist_img = Image.fromarray(img)
+        #     dist_img = dist_img.convert(mode='RGB').convert('P', palette=Image.ADAPTIVE, colors=len(classes))
+        #     dist_img.putpalette([item for sublist in classes.values() for item in sublist])
+        #     dist_img.save(str(filename))
 
     class GeoJsonUtil:
 
@@ -76,49 +86,100 @@ class GeoLabelUtil:
             lfile = ogr.Open(str(filename))
             return lfile
 
+        # @staticmethod
+        # def render(meta, layer, prev_res=None):
+        #     x = meta["RasterXSize"]
+        #     y = meta["RasterYSize"]
+        #     x_min, x_max, y_min, y_max = layer.GetExtent()
+        #     # https://www.programcreek.com/python/example/101827/gdal.RasterizeLayer
+        #     driver = gdal.GetDriverByName('MEM')
+        #     if prev_res is None:
+        #         dst_ds = driver.Create("", x, y, 3, gdal.GDT_Byte)
+        #     else:
+        #         dst_ds = prev_res
+        #     if x_min == 0 and x_max == 0 and y_min == 0 and y_max == 0:
+        #         dst_ds.SetGeoTransform(meta["GeoTransform"])
+        #     else:
+        #         dst_ds.SetGeoTransform((x_min, (x_max - x_min) / x, 0,
+        #                                y_max, 0, -(y_max - y_min) / y))
+        #     dst_ds.SetProjection(meta["Projection"])
+        #     gdal.RasterizeLayer(dst_ds, [1, 2, 3], layer, burn_values=[255])
+        #     # img = dst_ds.ReadAsArray()
+        #     # img = np.moveaxis(img, 0, -1)
+        #     return dst_ds
+
         @staticmethod
-        def render(meta, layer, color=None):
-            if color is None:
-                color = [255, 255, 255]
+        def render(meta, layer):
             x = meta["RasterXSize"]
             y = meta["RasterYSize"]
             # https://www.programcreek.com/python/example/101827/gdal.RasterizeLayer
             driver = gdal.GetDriverByName('MEM')
-            dst_ds = driver.Create("", x, y, 3, gdal.GDT_Byte)
+            dst_ds = driver.Create("", x, y, 1, gdal.GDT_Byte)
             dst_ds.SetGeoTransform(meta["GeoTransform"])
             dst_ds.SetProjection(meta["Projection"])
-            gdal.RasterizeLayer(dst_ds, [1, 2, 3], layer, burn_values=color)
+            gdal.RasterizeLayer(dst_ds, [1], layer, burn_values=[255])
             img = dst_ds.ReadAsArray()
-            img = np.moveaxis(img, 0, -1)
             return img
 
     class RenderThread(threading.Thread):
-        def __init__(self, img_src, tg_img, geojson_src=None, ras_img=None, cols=None):
+        def __init__(self, img_src, tg_img, cls_gjpath=None, mask_img=None, cols=None):
             """
             Args: img_src: Source image path (Raw satellite image)
                   tg_img: target image (RGB) output path
                   geojson_src:
-                  resimg_path: raster image (geojson mask) output path
+                  mask_img: geojson mask output path
             """
             threading.Thread.__init__(self)
             util = GeoLabelUtil()
             self.util = util.GeoImgUtil()
             self.img_src = img_src
             self.tg_img = tg_img
-            if geojson_src is not None and ras_img is not None:
-                self.geojson_src = geojson_src
-                self.ras_img = ras_img
+            if cls_gjpath is not None and mask_img is not None:
+                self.cls_gjpath = cls_gjpath
+                self.ras_img = mask_img
                 self.geojson_util = util.GeoJsonUtil()
-                self.do_raster = True
+                self.do_mask = True
                 self.colors = cols
 
         def run(self):
             img = self.util.load_geotiff(self.img_src)
             rimg = self.util.normalize_img(img.ReadAsArray())
-            self.util.save(rimg, self.tg_img)
+            self.util.save_rgb(rimg, self.tg_img)
             print("RGB saved to", self.tg_img)
-            if self.do_raster:
-                f_load = self.geojson_util.load_geojson(self.geojson_src)
-                res = self.geojson_util.render(self.util.read_meta(img), f_load.GetLayer(), self.colors["building"])
-                self.util.save(res, self.ras_img)
-                print("Mask saved to", self.ras_img)
+            if self.do_mask:
+                meta = self.util.read_meta(img)
+                pic_res = Image.new("P", (meta["RasterXSize"], meta["RasterYSize"]))
+                # [{"ignore": [0, 0, 0]}, {"building": [255, 0, 0]}, {"road": [0, 0, 255]}]
+                pl1 = [item for sublist in self.colors for item in sublist.values()]
+                # [[0, 0, 0], [255, 0, 0], [0, 0, 255]]
+                # [0, 0, 0, 255, 0, 0, 0, 0, 255]
+                pic_res.putpalette([item for sublist in pl1 for item in sublist])
+                for k, v in self.cls_gjpath.items():
+                    # cls_gj: {"building": "****_img1.geojson", "road": "****_img1.geojson"}
+                    f_load = self.geojson_util.load_geojson(v)
+                    if f_load is not None:
+                        rend = self.geojson_util.render(meta, f_load.GetLayer())
+                        if rend is not None:
+                            rend = Image.fromarray(rend).convert('L')
+                            pic_res.paste([i for i, d in enumerate(self.colors) if k in d.keys()][0], rend)
+                            pic_res.save(self.ras_img, optimize=1)
+                            print("Mask saved to", self.ras_img)
+
+    @staticmethod
+    def preprocess(img_dir, geojson_dir, rgb_tg, mask_tg, colors):
+        re_img_index = re.compile("img\d+")
+        re_pat = re.compile("(.*?)img\d+")
+        building_pat = re_pat.search(os.listdir(Path(geojson_dir) / "buildings")[0]).group(1)
+        # road_pat = re_pat.search(os.listdir(geojson_dir / "roads")[0]).group(1)
+
+        for f in os.listdir(img_dir):
+            img_index = re_img_index.search(f).group(0)
+            geojsons = {"building": Path(geojson_dir) / "buildings" / (building_pat + img_index + ".geojson")}
+            # geojsons = {"road": Path(geojson_dir) / "roads" / (road_pat + img_index + ".geojson")}
+            # geojsons = {"building": Path(geojson_dir) / "buildings" / (building_pat + img_index + ".geojson"),
+            #             "road": Path(geojson_dir) / "roads" / (road_pat + img_index + ".geojson")}
+            thread = GeoLabelUtil.RenderThread(Path(img_dir) / f,
+                                               Path(rgb_tg) / (img_index + ".png"),
+                                               geojsons,
+                                               Path(mask_tg) / (img_index + ".png"), colors)
+            thread.run()

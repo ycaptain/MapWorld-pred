@@ -1,14 +1,15 @@
 import argparse
+import os
+import sys
 import torch
 from tqdm import tqdm
+from PIL import Image
 
 src_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "src")
 sys.path.insert(0, src_dir)
 
-import data_loader.mnist_loaders as module_data
-import model.mnist.loss as module_loss
-import model.mnist.metric as module_metric
-from model.mnist import model as module_arch
+import data_loader as ds
+import model as module_arch
 from parse_config import ConfigParser
 
 
@@ -16,22 +17,15 @@ def main(config):
     logger = config.get_logger('test')
 
     # setup data_loader instances
-    data_loader = getattr(module_data, config['data_loader']['type'])(
-        config['data_loader']['args']['data_dir'],
-        batch_size=512,
-        shuffle=False,
-        validation_split=0.0,
-        training=False,
-        num_workers=2
-    )
+    data_loader = config.init_obj('data_loader', ds)
 
     # build model architecture
     model = config.init_obj('arch', module_arch)
     logger.info(model)
 
     # get function handles of loss and metrics
-    loss_fn = getattr(module_loss, config['loss'])
-    metric_fns = [getattr(module_metric, met) for met in config['metrics']]
+    loss_fn = config.init_obj('loss', module_arch.loss_entry).build_loss()
+    metric_fns = [getattr(module_arch.metric_entry, met) for met in config['metrics']]
 
     logger.info('Loading checkpoint: {} ...'.format(config.resume))
     checkpoint = torch.load(config.resume)
@@ -53,16 +47,16 @@ def main(config):
             data, target = data.to(device), target.to(device)
             output = model(data)
 
-            #
-            # save sample images, or do something with output here
-            #
+            img = output.cpu().numpy()[0, 1]
+            img = Image.fromarray(img)
+            img.save("saved/test/"+str(i)+".tif")
 
             # computing loss, metrics on test set
             loss = loss_fn(output, target)
             batch_size = data.shape[0]
             total_loss += loss.item() * batch_size
-            for i, metric in enumerate(metric_fns):
-                total_metrics[i] += metric(output, target) * batch_size
+            # for i, metric in enumerate(metric_fns):
+            #     total_metrics[i] += metric(output, target) * batch_size
 
     n_samples = len(data_loader.sampler)
     log = {'loss': total_loss / n_samples}

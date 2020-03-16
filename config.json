@@ -24,7 +24,10 @@
             "amsgrad": true
         }
     },
-    "loss": "nll_loss",
+    "loss": {
+        "type": "MnistLost",
+        "args": {}
+    },
     "metrics": [
         "accuracy", "top_k_acc"
     ],
@@ -36,6 +39,8 @@
         }
     },
     "trainer": {
+        "type": "MnistTrainer",
+        "args": {},
         "epochs": 100,
 
         "save_dir": "saved/",

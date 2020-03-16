@@ -18,18 +18,13 @@ if __name__ == '__main__':
     data_dir = Path(config['data_loader']['args']['data_dir'])
     data_name = config['data_loader']['args']['data_name']
     img_dir = data_dir / data_name / "RGB-PanSharpen"
-    save_dir = data_dir / data_name / 'SpaceNetDataset' / 'processed'
+    save_dir = data_dir / data_name / 'processed'
     img_save_dir = save_dir / "RGB"
 
-    building_geojson_dir = data_dir / data_name / "geojson" / "buildings"
-    roads_geojson_dir = data_dir / data_name / "geojson" / "roads"
-    raster_save_dir = save_dir / "labels"
+    geojson_dir = data_dir / data_name / "geojson"
+    mask_save_dir = save_dir / "labels"
     colors = config['data_loader']['args']["colors"]
 
     img_save_dir.mkdir(parents=True, exist_ok=True)
-    raster_save_dir.mkdir(parents=True, exist_ok=True)
-    for f in os.listdir(img_dir):
-        img_index = re_img_index.search(f).group(0)
-        geojson_fname = "buildings_%s%s.geojson" % (data_name.replace("Train", "").replace("Test", ""), img_index)
-        thread = util_geo.GeoLabelUtil.RenderThread(img_dir / f, img_save_dir / f, building_geojson_dir / geojson_fname, raster_save_dir / f, colors)
-        thread.run()
+    mask_save_dir.mkdir(parents=True, exist_ok=True)
+    util_geo.GeoLabelUtil.preprocess(img_dir, geojson_dir, img_save_dir, mask_save_dir, colors)

@@ -9,11 +9,9 @@ src_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "src")
 sys.path.insert(0, src_dir)
 
 import data_loader as ds
-import model.metric_entry as module_metric
 import model as module_arch
+import trainer as trains
 from parse_config import ConfigParser
-from trainer import Trainer
-
 
 # fix random seeds for reproducibility
 SEED = 123
@@ -45,11 +43,11 @@ def main(config):
 
     lr_scheduler = config.init_obj('lr_scheduler', module_arch.lr_entry, optimizer)
 
-    trainer = Trainer(model, criterion, metrics, optimizer,
-                      config=config,
-                      data_loader=data_loader,
-                      valid_data_loader=valid_data_loader,
-                      lr_scheduler=lr_scheduler)
+    trainer = config.init_obj('trainer', trains, model, criterion, metrics, optimizer,
+                              config=config,
+                              data_loader=data_loader,
+                              valid_data_loader=valid_data_loader,
+                              lr_scheduler=lr_scheduler)
 
     trainer.train()
 

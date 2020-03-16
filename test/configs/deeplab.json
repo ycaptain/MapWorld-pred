@@ -17,7 +17,7 @@
         "args":{
             "data_name": "AOI_3_Paris_Train",
             "data_dir": "data/FYPData/spacenet",
-            "batch_size": 100,
+            "batch_size": 2,
             "shuffle": true,
             "validation_split": 0.1,
             "num_workers": 2,
@@ -53,14 +53,14 @@
         }
     },
     "trainer": {
+        "type": "DeeplabTrainer",
+        "args": {},
         "epochs": 100,
         "save_dir": "saved/",
         "save_period": 1,
         "verbosity": 2,
-
         "monitor": "min val_loss",
         "early_stop": 10,
-
         "tensorboard": false
     }
 }

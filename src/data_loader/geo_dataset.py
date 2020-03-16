@@ -39,8 +39,6 @@ class GeoDataset(VisionDataset):
             Returns:
             tuple: (image, target) where target is index of the target class.
         """
-
-        # TODO: read img file
         image_id, image, label = self._load_data(index)
 
         if self.transform is not None:
@@ -49,7 +47,7 @@ class GeoDataset(VisionDataset):
         if self.target_transform is not None:
             target = self.target_transform(label)
 
-        return image_id, image.astype(np.float32), label.astype(np.int64)
+        return image.astype(np.float32), label.astype(np.int64)
 
     @property
     def processed_folder(self):

@@ -39,6 +39,8 @@
         }
     },
     "trainer": {
+        "type": "MnistTrainer",
+        "args": {},
         "epochs": 100,
 
         "save_dir": "saved/",

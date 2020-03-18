@@ -2,7 +2,7 @@ import numpy as np
 from torchvision.datasets import VisionDataset
 import os
 from pathlib import Path
-
+from PIL import Image
 
 class GeoDataset(VisionDataset):
     """GeoDataset.
@@ -16,6 +16,14 @@ class GeoDataset(VisionDataset):
                 target and transforms it.
         """
     files = []
+
+    def __init__(self, root, colors, train=True, transform=None, target_transform=None):
+        super(GeoDataset, self).__init__(root, transform=transform,
+                                         target_transform=target_transform)
+        self.train = train  # training set or test set
+        self.colors = colors
+        self.files = []
+        self._set_files()
 
     def _set_files(self):
         """
@@ -42,24 +50,20 @@ class GeoDataset(VisionDataset):
         image_id, image, label = self._load_data(index)
 
         if self.transform is not None:
-            img = self.transform(image)
+            image = self.transform(image)
 
         if self.target_transform is not None:
-            target = self.target_transform(label)
-
-        return image.astype(np.float32), label.astype(np.int64)
+            label = self.target_transform(label)
+        # Image.fromarray(image).show()
+        # Image.fromarray(label).show()
+        image = np.asarray(image)
+        label = np.asarray(label, dtype=np.uint8)
+        return np.moveaxis(image, -1, 0).astype(np.float32), label.astype(np.int64)
+        # return image.astype(np.float32), label.astype(np.int64)
 
     @property
     def processed_folder(self):
         return Path(os.path.join(self.root, 'processed'))
-
-    def __init__(self, root, colors, train=True, transform=None, target_transform=None):
-        super(GeoDataset, self).__init__(root, transform=transform,
-                                         target_transform=target_transform)
-        self.train = train  # training set or test set
-        self.colors = colors
-        self.files = []
-        self._set_files()
 
     def __repr__(self):
         fmt_str = "Dataset: " + self.__class__.__name__ + "\n"

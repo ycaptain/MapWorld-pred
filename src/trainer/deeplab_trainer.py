@@ -1,13 +1,34 @@
 import numpy as np
 import torch
+import torch.nn as nn
 from torchvision.utils import make_grid
 from base import BaseTrainer
 from utils import inf_loop
+import model as module_arch
 
 
 class DeeplabTrainer(BaseTrainer):
-    def __init__(self, model, criterion, metric_ftns, optimizer, config, data_loader,
-                 valid_data_loader=None, lr_scheduler=None, len_epoch=None):
+    def __init__(self, model, criterion, metric_ftns, config, data_loader,
+                 valid_data_loader=None, len_epoch=None):
+        lr = config["optimizer"]["lr"]
+        weight_decay = config["optimizer"]["weight_decay"]
+        optimizer = torch.optim.SGD(
+            # cf lr_mult and decay_mult in train.prototxt
+            # params=[
+            #     {
+            #         "params": self.get_params(model, key="1x"),
+            #         "lr": lr,
+            #         "weight_decay": weight_decay,
+            #     },
+            #     {
+            #         "params": self.get_params(model, key="10x"),
+            #         "lr": 10 * lr,
+            #         "weight_decay": weight_decay,
+            #     }
+            params=[{'params': model.get_1x_lr_params(), 'lr': lr},
+                    {'params': model.get_10x_lr_params(), 'lr': lr * 10}],
+            momentum=config["optimizer"]["momentum"],
+        )
         super().__init__(model, criterion, metric_ftns, optimizer, config)
         self.config = config
         self.data_loader = data_loader
@@ -20,12 +41,11 @@ class DeeplabTrainer(BaseTrainer):
             self.len_epoch = len_epoch
         self.valid_data_loader = valid_data_loader
         self.do_validation = self.valid_data_loader is not None
-        self.lr_scheduler = lr_scheduler
+        self.lr_scheduler = config.init_obj('lr_scheduler', module_arch.lr_entry, optimizer)
         self.log_step = int(np.sqrt(data_loader.batch_size))
 
     def _train_epoch(self, epoch):
         self.model.train()
-        # self.model.module.base.freeze_bn()
         for batch_idx, (data, target) in enumerate(self.data_loader):
             data, target = data.to(self.device), target.to(self.device)
             self.optimizer.zero_grad()
@@ -68,3 +88,25 @@ class DeeplabTrainer(BaseTrainer):
             current = batch_idx
             total = self.len_epoch
         return base.format(current, total, 100.0 * current / total)
+
+    @staticmethod
+    def get_params(model, key):
+        # For Dilated FCN
+        if key == "1x":
+            for m in model.named_modules():
+                if "layer" in m[0]:
+                    if isinstance(m[1], nn.Conv2d):
+                        for p in m[1].parameters():
+                            yield p
+        # For conv weight in the ASPP module
+        if key == "10x":
+            for m in model.named_modules():
+                if "aspp" in m[0]:
+                    if isinstance(m[1], nn.Conv2d):
+                        yield m[1].weight
+        # For conv bias in the ASPP module
+        if key == "20x":
+            for m in model.named_modules():
+                if "aspp" in m[0]:
+                    if isinstance(m[1], nn.Conv2d):
+                        yield m[1].bias

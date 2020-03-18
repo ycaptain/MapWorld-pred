@@ -33,22 +33,13 @@ def main(config):
     logger.info(model)
 
     # get function handles of loss and metrics
-    # criterion = getattr(module_loss, config['loss'])
     criterion = config.init_obj('loss', module_arch.loss_entry).build_loss()
     metrics = [getattr(module_arch.metric_entry, met) for met in config['metrics']]
 
-    # build optimizer, learning rate scheduler. delete every lines containing lr_scheduler for disabling scheduler
-    trainable_params = filter(lambda p: p.requires_grad, model.parameters())
-    optimizer = config.init_obj('optimizer', torch.optim, trainable_params)
-
-    lr_scheduler = config.init_obj('lr_scheduler', module_arch.lr_entry, optimizer)
-
-    trainer = config.init_obj('trainer', trains, model, criterion, metrics, optimizer,
+    trainer = config.init_obj('trainer', trains, model, criterion, metrics,
                               config=config,
                               data_loader=data_loader,
-                              valid_data_loader=valid_data_loader,
-                              lr_scheduler=lr_scheduler)
-
+                              valid_data_loader=valid_data_loader)
     trainer.train()
 
 

@@ -3,16 +3,18 @@ import torch
 from torchvision.utils import make_grid
 from base import BaseTrainer
 from utils import inf_loop, MetricTracker
+import model as module_arch
 
 
 class MnistTrainer(BaseTrainer):
     """
     Trainer class
     """
-    def __init__(self, model, criterion, metric_ftns, optimizer, config, data_loader,
-                 valid_data_loader=None, lr_scheduler=None, len_epoch=None):
+    def __init__(self, model, criterion, metric_ftns, config, data_loader,
+                 valid_data_loader=None, len_epoch=None):
+        trainable_params = filter(lambda p: p.requires_grad, model.parameters())
+        optimizer = config.init_obj('optimizer', torch.optim, trainable_params)
         super().__init__(model, criterion, metric_ftns, optimizer, config)
-        self.config = config
         self.data_loader = data_loader
         if len_epoch is None:
             # epoch-based training
@@ -23,7 +25,7 @@ class MnistTrainer(BaseTrainer):
             self.len_epoch = len_epoch
         self.valid_data_loader = valid_data_loader
         self.do_validation = self.valid_data_loader is not None
-        self.lr_scheduler = lr_scheduler
+        self.lr_scheduler = config.init_obj('lr_scheduler', module_arch.lr_entry, optimizer)
         self.log_step = int(np.sqrt(data_loader.batch_size))
 
         self.train_metrics = MetricTracker('loss', *[m.__name__ for m in self.metric_ftns], writer=self.writer)

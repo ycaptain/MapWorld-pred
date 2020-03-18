@@ -36,9 +36,12 @@ class SpaceNetDataset(GeoDataset):
         image_path = os.path.join(self.image_dir, image_id)
         label_path = os.path.join(self.label_dir, image_id)
         # Load an image
-        image = np.asarray(Image.open(image_path))
-        label = np.asarray(Image.open(label_path), dtype=np.int32)
-        return image_id, np.moveaxis(image, -1, 0), label
+        # image = np.asarray(Image.open(image_path))
+        # label = np.asarray(Image.open(label_path), dtype=np.uint8)
+        # return image_id, np.moveaxis(image, -1, 0), label
+        image = Image.open(image_path)
+        label = Image.open(label_path)
+        return image_id, image, label
 
     def process(self):
         img_save_dir = self.processed_folder / "RGB"

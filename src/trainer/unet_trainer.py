@@ -1,15 +1,14 @@
 import numpy as np
 import torch
+import torch.nn as nn
 from torchvision.utils import make_grid
+from tqdm import tqdm
 from base import BaseTrainer
-from utils import inf_loop, MetricTracker
+from utils import inf_loop
 import model as module_arch
 
 
-class MnistTrainer(BaseTrainer):
-    """
-    Trainer class
-    """
+class UNetTrainer(BaseTrainer):
     def __init__(self, model, criterion, metric_ftns, config, data_loader,
                  valid_data_loader=None, len_epoch=None):
         trainable_params = filter(lambda p: p.requires_grad, model.parameters())
@@ -28,19 +27,16 @@ class MnistTrainer(BaseTrainer):
         self.lr_scheduler = config.init_obj('lr_scheduler', module_arch.lr_entry, optimizer)
         self.log_step = int(np.sqrt(data_loader.batch_size))
 
-        self.train_metrics = MetricTracker('loss', *[m.__name__ for m in self.metric_ftns], writer=self.writer)
-        self.valid_metrics = MetricTracker('loss', *[m.__name__ for m in self.metric_ftns], writer=self.writer)
+        # self.train_metrics = MetricTracker('loss', *[m.__name__ for m in self.metric_ftns], writer=self.writer)
+        # self.valid_metrics = MetricTracker('loss', *[m.__name__ for m in self.metric_ftns], writer=self.writer)
+        self.train_metrics = metric_ftns[0]
+        self.valid_metrics = metric_ftns[0]
 
     def _train_epoch(self, epoch):
-        """
-        Training logic for an epoch
-
-        :param epoch: Integer, current training epoch.
-        :return: A log that contains average loss and metric in this epoch.
-        """
         self.model.train()
         self.train_metrics.reset()
-        for batch_idx, (data, target) in enumerate(self.data_loader):
+        tbar = tqdm(self.data_loader)
+        for batch_idx, (img_id, data, target) in enumerate(tbar):
             data, target = data.to(self.device), target.to(self.device)
 
             self.optimizer.zero_grad()
@@ -50,9 +46,6 @@ class MnistTrainer(BaseTrainer):
             self.optimizer.step()
 
             self.writer.set_step((epoch - 1) * self.len_epoch + batch_idx)
-            self.train_metrics.update('loss', loss.item())
-            for met in self.metric_ftns:
-                self.train_metrics.update(met.__name__, met(output, target))
 
             if batch_idx % self.log_step == 0:
                 self.logger.debug('Train Epoch: {} {} Loss: {:.6f}'.format(
@@ -63,11 +56,12 @@ class MnistTrainer(BaseTrainer):
 
             if batch_idx == self.len_epoch:
                 break
-        log = self.train_metrics.result()
+
+        log = dict()
 
         if self.do_validation:
             val_log = self._valid_epoch(epoch)
-            log.update(**{'val_'+k : v for k, v in val_log.items()})
+            log.update(**{'val_' + k: v for k, v in val_log.items()})
 
         if self.lr_scheduler is not None:
             self.lr_scheduler.step()

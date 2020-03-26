@@ -1,12 +1,11 @@
 {
-    "name": "DeepLabTest",
+    "name": "UNetTest",
     "n_gpu": 1,
     "log_config": "src/logger/logger_config.json",
     "arch": {
-         "type": "DeepLab",
+         "type": "UNet",
          "args": {
-             "num_classes": 3,
-             "backbone": "mobilenet"
+             "num_classes": 3
          }
     },
     "data_loader": {
@@ -39,12 +38,6 @@
         }
     },
     "metrics": [
-        {
-            "type": "DeeplabEvaluator",
-            "args": {
-                "num_class": 3
-            }
-        }
     ],
     "optimizer": {
         "type": "SGD",
@@ -61,7 +54,7 @@
         }
     },
     "trainer": {
-        "type": "DeeplabTrainer",
+        "type": "UNetTrainer",
         "args": {},
         "epochs": 100,
         "save_dir": "saved/",
@@ -70,21 +63,5 @@
         "monitor": "max val_mIoU",
         "early_stop": 10,
         "tensorboard": false
-    },
-    "tester": {
-        "type": "DeeplabTester",
-        "args": {},
-        "verbosity": 2,
-        "postprocessor": {
-            "type": "DenseCRF",
-            "args": {
-                "iter_max": 10,
-                "pos_w": 3,
-                "pos_xy_std": 1,
-                "bi_w": 4,
-                "bi_xy_std": 67,
-                "bi_rgb_std": 3
-            }
-        }
     }
 }

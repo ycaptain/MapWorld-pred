@@ -8,10 +8,9 @@ import sys
 src_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "src")
 sys.path.insert(0, src_dir)
 
-import data_loader as ds
-import model as module_arch
 import trainer as trains
 from parse_config import ConfigParser
+from utils import init
 
 # fix random seeds for reproducibility
 SEED = 123
@@ -22,33 +21,13 @@ np.random.seed(SEED)
 
 
 def main(config):
-    logger = config.get_logger('train')
+    data_loader, model, criterion, metrics = init(config)
 
-    # setup data_loader instances
-    data_loader = config.init_obj('data_loader', ds)
     valid_data_loader = data_loader.split_validation()
-
-    # build model architecture, then print to console
-    model = config.init_obj('arch', module_arch)
-    logger.info(model)
-
-    # get function handles of loss and metrics
-    # criterion = getattr(module_loss, config['loss'])
-    criterion = config.init_obj('loss', module_arch.loss_entry).build_loss()
-    metrics = [getattr(module_arch.metric_entry, met) for met in config['metrics']]
-
-    # build optimizer, learning rate scheduler. delete every lines containing lr_scheduler for disabling scheduler
-    trainable_params = filter(lambda p: p.requires_grad, model.parameters())
-    optimizer = config.init_obj('optimizer', torch.optim, trainable_params)
-
-    lr_scheduler = config.init_obj('lr_scheduler', module_arch.lr_entry, optimizer)
-
-    trainer = config.init_obj('trainer', trains, model, criterion, metrics, optimizer,
+    trainer = config.init_obj('trainer', trains, model, criterion, metrics,
                               config=config,
                               data_loader=data_loader,
-                              valid_data_loader=valid_data_loader,
-                              lr_scheduler=lr_scheduler)
-
+                              valid_data_loader=valid_data_loader)
     trainer.train()
 
 

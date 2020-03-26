@@ -12,7 +12,7 @@ os.chdir(root_dir)
 if __name__ == '__main__':
     pixel_size = 1.0
     # Filename of input OGR file
-    vector_fn = 'data/FYPData/spacenet/AOI_2_Vegas_Train/geojson_roads_speed/SN3_roads_train_AOI_2_Vegas_geojson_roads_speed_img1.geojson'
+    vector_fn = 'data/FYPData/spacenet/AOI_2_Vegas_Train/roads/SN3_roads_train_AOI_2_Vegas_geojson_roads_speed_img1.geojson'
 
     # Open the data source and read in the extent
     source_ds = ogr.Open(vector_fn)

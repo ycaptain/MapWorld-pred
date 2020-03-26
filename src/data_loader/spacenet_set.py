@@ -1,5 +1,4 @@
 import os
-import numpy as np
 from .geo_dataset import GeoDataset
 from utils import util_geo
 from PIL import Image
@@ -41,7 +40,7 @@ class SpaceNetDataset(GeoDataset):
         # return image_id, np.moveaxis(image, -1, 0), label
         image = Image.open(image_path)
         label = Image.open(label_path)
-        return image_id, image, label
+        return os.path.basename(self.root) + "_" + os.path.splitext(image_id)[0], image, label
 
     def process(self):
         img_save_dir = self.processed_folder / "RGB"

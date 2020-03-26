@@ -1,10 +1,10 @@
 import numpy as np
-from torchvision.datasets import VisionDataset
+import torch.utils.data as data
 import os
 from pathlib import Path
-from PIL import Image
 
-class GeoDataset(VisionDataset):
+
+class GeoDataset(data.Dataset):
     """GeoDataset.
         Args:
             root (string): Root directory of dataset.
@@ -18,8 +18,9 @@ class GeoDataset(VisionDataset):
     files = []
 
     def __init__(self, root, colors, train=True, transform=None, target_transform=None):
-        super(GeoDataset, self).__init__(root, transform=transform,
-                                         target_transform=target_transform)
+        self.root = os.path.expanduser(root)
+        self.transform = transform
+        self.target_transform = target_transform
         self.train = train  # training set or test set
         self.colors = colors
         self.files = []
@@ -45,7 +46,7 @@ class GeoDataset(VisionDataset):
             Args:
             index (int): Index
             Returns:
-            tuple: (image, target) where target is index of the target class.
+            tuple: (image_id, image, target)
         """
         image_id, image, label = self._load_data(index)
 
@@ -54,12 +55,9 @@ class GeoDataset(VisionDataset):
 
         if self.target_transform is not None:
             label = self.target_transform(label)
-        # Image.fromarray(image).show()
-        # Image.fromarray(label).show()
         image = np.asarray(image)
         label = np.asarray(label, dtype=np.uint8)
-        return np.moveaxis(image, -1, 0).astype(np.float32), label.astype(np.int64)
-        # return image.astype(np.float32), label.astype(np.int64)
+        return image_id, np.moveaxis(image, -1, 0).astype(np.float32), label.astype(np.int64)
 
     @property
     def processed_folder(self):

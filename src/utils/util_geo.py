@@ -1,5 +1,6 @@
 import os
 import re
+from concurrent.futures.thread import ThreadPoolExecutor
 
 import numpy as np
 from osgeo import gdal, ogr
@@ -166,7 +167,8 @@ class GeoLabelUtil:
                             print("Mask saved to", self.ras_img)
 
     @staticmethod
-    def preprocess(img_dir, geojson_dir, rgb_tg, mask_tg, colors):
+    def preprocess(img_dir, geojson_dir, rgb_tg, mask_tg, colors, num_workers=4):
+        pool = ThreadPoolExecutor(max_workers=num_workers)
         re_img_index = re.compile("img\d+")
         re_pat = re.compile("(.*?)img\d+")
         building_pat = re_pat.search(os.listdir(Path(geojson_dir) / "buildings")[0]).group(1)
@@ -175,11 +177,18 @@ class GeoLabelUtil:
         for f in os.listdir(img_dir):
             img_index = re_img_index.search(f).group(0)
             geojsons = {"building": Path(geojson_dir) / "buildings" / (building_pat + img_index + ".geojson")}
+
             # geojsons = {"road": Path(geojson_dir) / "roads" / (road_pat + img_index + ".geojson")}
             # geojsons = {"building": Path(geojson_dir) / "buildings" / (building_pat + img_index + ".geojson"),
             #             "road": Path(geojson_dir) / "roads" / (road_pat + img_index + ".geojson")}
-            thread = GeoLabelUtil.RenderThread(Path(img_dir) / f,
-                                               Path(rgb_tg) / (img_index + ".png"),
-                                               geojsons,
-                                               Path(mask_tg) / (img_index + ".png"), colors)
-            thread.run()
+
+            def pool_wrapper(p1, p2, p3, p4, p5):
+                thread = GeoLabelUtil.RenderThread(p1, p2, p3, p4, p5)
+                thread.run()
+                # thread.start()
+
+            pool.submit(pool_wrapper, Path(img_dir) / f,
+                        Path(rgb_tg) / (img_index + ".png"),
+                        geojsons,
+                        Path(mask_tg) / (img_index + ".png"), colors)
+        pool.shutdown(wait=True)

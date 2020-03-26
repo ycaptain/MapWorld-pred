@@ -5,10 +5,14 @@
    "data_loader": {
         "type": "GeoDataLoader",
         "args":{
-            "data_name": "AOI_3_Paris_Train",
+            "data_name": "AOI_5_Khartoum_Train",
             "data_dir": "data/FYPData/spacenet",
+            "batch_size": 20,
+            "shuffle": true,
+            "validation_split": 0.1,
+            "num_workers": 4,
             "colors": [
-                {"ignore": [0, 0, 0]},
+                {"background": [0, 0, 0]},
                 {"building": [255, 0, 0]},
                 {"road": [0, 0, 255]}
             ]

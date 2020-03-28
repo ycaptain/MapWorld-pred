@@ -44,12 +44,14 @@ class DeeplabTrainer(BaseTrainer):
             module_args = dict(config["tester"]['postprocessor']['args'])
             self.postprocessor = getattr(postps_crf, module_name)(**module_args)
 
-        self.logit_dir = config.save_dir / "logits"
-        self.logit_dir.mkdir(parents=True, exist_ok=True)
+        if config["tester"].get("save_logits", False):
+            self.logit_dir = config.save_dir / "logits"
+            self.logit_dir.mkdir(parents=True, exist_ok=True)
+            self.save_logits = True
 
     def _train_epoch(self, epoch):
         self.model.train()
-        self.train_metrics.reset()
+        # self.train_metrics.reset()
         tbar = tqdm(self.data_loader)
         for batch_idx, (img_id, data, target) in enumerate(tbar):
             data, target = data.to(self.device), target.to(self.device)
@@ -60,6 +62,11 @@ class DeeplabTrainer(BaseTrainer):
             self.optimizer.step()
 
             self.writer.set_step((epoch - 1) * self.len_epoch + batch_idx)
+            # pred = output.data.cpu().numpy()
+            # target = target.cpu().numpy()
+            # pred = np.argmax(pred, axis=1)
+            # Add batch sample into evaluator
+            # self.train_metrics.add_batch(target, pred)
 
             if batch_idx % self.log_step == 0:
                 self.logger.debug('Train Epoch: {} {} Loss: {:.6f}'.format(
@@ -70,7 +77,6 @@ class DeeplabTrainer(BaseTrainer):
 
             if batch_idx == self.len_epoch:
                 break
-
         log = dict()
 
         if self.do_validation:
@@ -155,6 +161,11 @@ class DeeplabTrainer(BaseTrainer):
                 data, target = data.to(self.device), target.to(self.device)
                 output = self.model(data)
 
-                for image_id, logit in zip(image_ids, output):
-                    filename = os.path.join(self.logit_dir, image_id + ".npy")
-                    np.save(filename, logit.cpu().numpy())
+                if self.save_logits:
+                    for image_id, logit in zip(image_ids, output):
+                        filename = os.path.join(self.logit_dir, image_id + ".npy")
+                        np.save(filename, logit.cpu().numpy())
+
+    def crf(self):
+        pass
+

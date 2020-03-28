@@ -2,8 +2,6 @@ import unittest
 from pathlib import Path
 import os, sys
 
-import numpy as np
-
 root_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 src_dir = os.path.join(root_dir, "src")
 sys.path.insert(0, src_dir)

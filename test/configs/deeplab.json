@@ -68,13 +68,10 @@
         "save_period": 10,
         "verbosity": 2,
         "monitor": "max val_mIoU",
-        "early_stop": 10,
+        "early_stop": 20,
         "tensorboard": false
     },
     "tester": {
-        "type": "DeeplabTester",
-        "args": {},
-        "verbosity": 2,
         "postprocessor": {
             "type": "DenseCRF",
             "args": {
@@ -85,6 +82,7 @@
                 "bi_xy_std": 67,
                 "bi_rgb_std": 3
             }
-        }
+        },
+        "save_logits": false
     }
 }

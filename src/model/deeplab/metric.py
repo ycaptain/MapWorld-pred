@@ -3,6 +3,10 @@ import numpy as np
 
 class DeeplabEvaluator(object):
 
+    @staticmethod
+    def __name__():
+        return "DeeplabEvaluator"
+
     def result(self):
         return {
             "Acc": self.Pixel_Accuracy(),

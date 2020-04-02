@@ -23,7 +23,7 @@
             "shuffle": true,
             "validation_split": 0.1,
             "num_workers": 4,
-            "colors": [
+            "classes": [
                 {"background": [0, 0, 0]},
                 {"building": [255, 0, 0]},
                 {"road": [0, 0, 255]}
@@ -40,7 +40,7 @@
     },
     "metrics": [
         {
-            "type": "DeeplabEvaluator",
+            "type": "SegEvaluator",
             "args": {
                 "num_class": 3
             }

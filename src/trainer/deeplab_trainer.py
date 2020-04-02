@@ -1,10 +1,13 @@
+import joblib
 import numpy as np
 import torch
 import os
 import torch.nn as nn
+import torch.nn.functional as F
 from torchvision.utils import make_grid
 from tqdm import tqdm
 from base import BaseTrainer
+from model.deeplab.metric import SegEvaluator
 from utils import inf_loop
 import model as module_arch
 import utils.crf as postps_crf
@@ -21,6 +24,12 @@ class DeeplabTrainer(BaseTrainer):
             momentum=config["optimizer"]["momentum"],
         )
         super().__init__(model, criterion, metric_ftns, optimizer, config)
+        # self.train_metrics = metric_ftns[0]
+        # self.valid_metrics = metric_ftns[0]
+        if len(metric_ftns) != 1:
+            raise ValueError("Only support 1 metric now.")
+        if not isinstance(metric_ftns[0], SegEvaluator):
+            raise ValueError("Only support SegEvaluator now.")
         self.train_metrics = metric_ftns[0]
         self.valid_metrics = metric_ftns[0]
         self.config = config
@@ -38,16 +47,20 @@ class DeeplabTrainer(BaseTrainer):
         self.log_step = int(np.sqrt(data_loader.batch_size))
 
         self.postprocessor = None
-
         if 'postprocessor' in config["tester"]:
             module_name = config["tester"]['postprocessor']['type']
             module_args = dict(config["tester"]['postprocessor']['args'])
             self.postprocessor = getattr(postps_crf, module_name)(**module_args)
 
+        self.logit_dir = None
         if config["tester"].get("save_logits", False):
+            # if config.resume is not None:
+            #     self.logit_dir = config.resume.parent / "logits"
+            # else:
             self.logit_dir = config.save_dir / "logits"
             self.logit_dir.mkdir(parents=True, exist_ok=True)
-            self.save_logits = True
+
+        # self.crf_only = config["tester"].get("crf_only", False)
 
     def _train_epoch(self, epoch):
         self.model.train()
@@ -55,6 +68,9 @@ class DeeplabTrainer(BaseTrainer):
         tbar = tqdm(self.data_loader)
         for batch_idx, (img_id, data, target) in enumerate(tbar):
             data, target = data.to(self.device), target.to(self.device)
+            batch_size = data.shape[0]
+            if batch_size < 2:
+                continue
             self.optimizer.zero_grad()
             output = self.model(data)
             loss = self.criterion(output, target)
@@ -95,6 +111,9 @@ class DeeplabTrainer(BaseTrainer):
         with torch.no_grad():
             for batch_idx, (img_id, data, target) in enumerate(tbar):
                 data, target = data.to(self.device), target.to(self.device)
+                batch_size = data.shape[0]
+                if batch_size < 2:
+                    continue
                 output = self.model(data)
                 loss = self.criterion(output, target)
                 test_loss += loss.item()
@@ -112,13 +131,13 @@ class DeeplabTrainer(BaseTrainer):
         self.writer.add_scalar('val/Acc', result["Acc"], epoch)
         self.writer.add_scalar('val/Acc_class', result["Acc_class"], epoch)
         self.writer.add_scalar('val/fwIoU', result["FWIoU"], epoch)
-        print('Validation:')
-        print('[Epoch: %d]' % epoch)
-        print("Acc:{}, Acc_class:{}, mIoU:{}, fwIoU: {}".format(result["Acc"],
-                                                                result["Acc_class"],
-                                                                result["mIoU"],
-                                                                result["FWIoU"]))
-        print('Loss: %.3f' % test_loss)
+        # print('Validation:')
+        # print('[Epoch: %d]' % epoch)
+        # print("Acc:{}, Acc_class:{}, mIoU:{}, fwIoU: {}".format(result["Acc"],
+        #                                                         result["Acc_class"],
+        #                                                         result["mIoU"],
+        #                                                         result["FWIoU"]))
+        # print('Loss: %.3f' % test_loss)
 
         return result
 
@@ -155,17 +174,83 @@ class DeeplabTrainer(BaseTrainer):
                         yield m[1].bias
 
     def test(self):
+        total_loss = 0.0
+        total_metrics = dict()
+
+        if self.do_validation:
+            dataloader = self.valid_data_loader
+        else:
+            dataloader = self.data_loader
+
         with torch.no_grad():
-            tbar = tqdm(self.data_loader)
-            for i, (image_ids, data, target) in enumerate(tbar):
-                data, target = data.to(self.device), target.to(self.device)
-                output = self.model(data)
+            # if not self.crf_only:
+                tbar = tqdm(dataloader)
+                for i, (image_ids, data, target) in enumerate(tbar):
+                    data, target = data.to(self.device), target.to(self.device)
+                    batch_size = data.shape[0]
+                    if batch_size < 2:
+                        continue
+                    output = self.model(data)
+                    loss = self.criterion(output, target)
+                    total_loss += loss.item() * batch_size
 
-                if self.save_logits:
-                    for image_id, logit in zip(image_ids, output):
-                        filename = os.path.join(self.logit_dir, image_id + ".npy")
-                        np.save(filename, logit.cpu().numpy())
+                    pred = output.data.cpu().numpy()
+                    target = target.cpu().numpy()
+                    pred = np.argmax(pred, axis=1)
+                    # Add batch sample into evaluator
+                    self.valid_metrics.add_batch(target, pred)
 
-    def crf(self):
-        pass
+                    if self.logit_dir is not None:
+                        for image_id, logit in zip(image_ids, output):
+                            filename = os.path.join(self.logit_dir, image_id + ".npy")
+                            np.save(filename, logit.cpu().numpy())
 
+                    val_log = self.valid_metrics.result()
+                    total_metrics.update(**{'val_' + k: v for k, v in val_log.items()})
+
+            # crf_metric = self.crf()
+            # total_metrics.update(**{'val_crf_' + k: v for k, v in crf_metric.items()})
+
+        return total_loss, total_metrics
+
+    # def crf(self):
+    #     if self.postprocessor is None or self.logit_dir is None:
+    #         print("Postprocessor or save directory is not defined in configure file. Skipping postprocessing...")
+    #         return dict()
+    #
+    #     def process(dataset, i):
+    #         image_id, image, gt_label = dataset.__getitem__(i)
+    #
+    #         filename = os.path.join(self.logit_dir, image_id + ".npy")
+    #         try:
+    #             logit = np.load(filename)
+    #         except FileNotFoundError:
+    #             return None, None
+    #
+    #         _, H, W = image.shape
+    #         logit = torch.FloatTensor(logit)[None, ...]
+    #         logit = F.interpolate(logit, size=(H, W), mode="bilinear", align_corners=False)
+    #         prob = F.softmax(logit, dim=1)[0].numpy()
+    #
+    #         image = image.astype(np.uint8).transpose(1, 2, 0)
+    #         prob = self.postprocessor(image, prob)
+    #         label = np.argmax(prob, axis=0)
+    #
+    #         return label, gt_label
+    #
+    #     n_jobs = self.postprocessor.get_n_jobs()
+    #     if self.do_validation:
+    #         dataset = self.valid_data_loader.get_dataset()
+    #     else:
+    #         dataset = self.data_loader.get_dataset()
+    #
+    #     results = joblib.Parallel(n_jobs=n_jobs, verbose=10, pre_dispatch="all")(
+    #         [joblib.delayed(process)(dataset, i) for i in range(len(dataset))]
+    #     )
+    #
+    #     self.valid_metrics.reset()
+    #
+    #     for preds, gts in zip(*results):
+    #         self.valid_metrics.add_batch(gts, preds)
+    #
+    #     return self.valid_metrics.result()

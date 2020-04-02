@@ -23,12 +23,13 @@
             "shuffle": true,
             "validation_split": 0.1,
             "num_workers": 4,
-            "colors": [
+            "classes": [
                 {"background": [0, 0, 0]},
                 {"building": [255, 0, 0]},
                 {"road": [0, 0, 255]}
             ],
-            "scales": [0.5, 0.75, 1.0, 1.25, 1.5]
+            "scales": [0.5, 0.75, 1.0, 1.25, 1.5],
+            "crop_size": 325
         }
     },
     "loss": {
@@ -40,7 +41,7 @@
     },
     "metrics": [
         {
-            "type": "DeeplabEvaluator",
+            "type": "SegEvaluator",
             "args": {
                 "num_class": 3
             }
@@ -80,9 +81,11 @@
                 "pos_xy_std": 1,
                 "bi_w": 4,
                 "bi_xy_std": 67,
-                "bi_rgb_std": 3
+                "bi_rgb_std": 3,
+                "n_jobs": 8
             }
         },
-        "save_logits": false
+        "save_logits": true,
+        "crop_size": 325
     }
 }

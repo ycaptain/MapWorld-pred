@@ -50,21 +50,24 @@ class SpaceNetDataLoader(BaseDataLoader):
         w, h = label.size
         return self._augmentation(label, h, w)
 
-    def __init__(self, data_name, data_dir, batch_size, colors=None, shuffle=True, validation_split=0.0, num_workers=1,
+    def __init__(self, data_name, data_dir, batch_size, classes=None, shuffle=True, validation_split=0.0, num_workers=1,
                  training=True, scales=None, crop_size=325, ignore_label=255):
-        if colors is None:
-            colors = [{"ignore": [0, 0, 0]}, {"building": [255, 0, 0]}, {"road": [0, 0, 255]}]
+        if classes is None:
+            classes = [{"ignore": [0, 0, 0]}, {"building": [255, 0, 0]}, {"road": [0, 0, 255]}]
         ds = list()
         for dn in data_name:
             ds.append(SpaceNetDataset(root=os.path.join(data_dir, dn),
-                                      colors=colors,
+                                      classes=classes,
                                       train=training,
                                       transform=self.trsfm,
                                       target_transform=self.trsfm_label))
-        self.colors = colors
+        self.classes = classes
         self.cur_scale = None
         self.scales = scales
         self.crop_size = crop_size
         self.ignore_label = ignore_label
         self.dataset = ConcatDataset(ds)
         super().__init__(self.dataset, batch_size, shuffle, validation_split, num_workers)
+
+    def get_dataset(self):
+        return self.dataset

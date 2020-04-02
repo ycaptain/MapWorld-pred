@@ -1,7 +1,7 @@
 import numpy as np
 
 
-class DeeplabEvaluator(object):
+class SegEvaluator(object):
 
     @staticmethod
     def __name__():

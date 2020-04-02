@@ -14,15 +14,14 @@ def main(config):
     logger = config.get_logger('test')
 
     data_loader, model, criterion, metrics = init(config)
+    # valid_data_loader = data_loader.split_validation()
 
     tester = config.init_obj('trainer', trains, model, criterion, metrics, config, data_loader)
     total_loss, total_metrics = tester.test()
 
     n_samples = len(data_loader.sampler)
     log = {'loss': total_loss / n_samples}
-    log.update({
-        met.__name__: total_metrics[i].item() / n_samples for i, met in enumerate(metrics)
-    })
+    log.update(total_metrics)
     logger.info(log)
 
 

@@ -47,7 +47,7 @@ class SpaceNetDataset(GeoDataset):
         img_save_dir.mkdir(parents=True, exist_ok=True)
         mask_save_dir = self.processed_folder / "labels"
         mask_save_dir.mkdir(parents=True, exist_ok=True)
-        util_geo.GeoLabelUtil.preprocess(self.image_dir, self.label_dir, img_save_dir, mask_save_dir, self.colors)
+        util_geo.GeoLabelUtil.preprocess(self.image_dir, self.label_dir, img_save_dir, mask_save_dir, self.classes)
         # split to list
         flists = os.listdir(img_save_dir)
         with open(self.train_file, 'w') as f:

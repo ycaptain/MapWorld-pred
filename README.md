@@ -50,6 +50,13 @@ Run the following command to start the train process conformed to `config.json`.
 python train.py -c config.json
 ```
 
+Run the following command to generate Thrift binding code.
+
+```bash
+cd src
+thrift --gen py service.thrift
+```
+
 ### Config file format
 
 Config files are in `.json` format:

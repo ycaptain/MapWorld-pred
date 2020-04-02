@@ -123,7 +123,7 @@ class GeoLabelUtil:
             return img
 
     class RenderThread(threading.Thread):
-        def __init__(self, img_src, tg_img, cls_gjpath=None, mask_img=None, cols=None):
+        def __init__(self, img_src, tg_img, cls_gjpath=None, mask_img=None, clses=None):
             """
             Args: img_src: Source image path (Raw satellite image)
                   tg_img: target image (RGB) output path
@@ -140,7 +140,7 @@ class GeoLabelUtil:
                 self.ras_img = mask_img
                 self.geojson_util = util.GeoJsonUtil()
                 self.do_mask = True
-                self.colors = cols
+                self.classes = clses
 
         def run(self):
             img = self.util.load_geotiff(self.img_src)
@@ -151,7 +151,7 @@ class GeoLabelUtil:
                 meta = self.util.read_meta(img)
                 pic_res = Image.new("P", (meta["RasterXSize"], meta["RasterYSize"]))
                 # [{"ignore": [0, 0, 0]}, {"building": [255, 0, 0]}, {"road": [0, 0, 255]}]
-                pl1 = [item for sublist in self.colors for item in sublist.values()]
+                pl1 = [item for sublist in self.classes for item in sublist.values()]
                 # [[0, 0, 0], [255, 0, 0], [0, 0, 255]]
                 # [0, 0, 0, 255, 0, 0, 0, 0, 255]
                 pic_res.putpalette([item for sublist in pl1 for item in sublist])
@@ -162,12 +162,12 @@ class GeoLabelUtil:
                         rend = self.geojson_util.render(meta, f_load.GetLayer())
                         if rend is not None:
                             rend = Image.fromarray(rend).convert('L')
-                            pic_res.paste([i for i, d in enumerate(self.colors) if k in d.keys()][0], rend)
+                            pic_res.paste([i for i, d in enumerate(self.classes) if k in d.keys()][0], rend)
                             pic_res.save(self.ras_img, optimize=1)
                             print("Mask saved to", self.ras_img)
 
     @staticmethod
-    def preprocess(img_dir, geojson_dir, rgb_tg, mask_tg, colors, num_workers=4):
+    def preprocess(img_dir, geojson_dir, rgb_tg, mask_tg, classes, num_workers=4):
         pool = ThreadPoolExecutor(max_workers=num_workers)
         re_img_index = re.compile("img\d+")
         re_pat = re.compile("(.*?)img\d+")
@@ -190,5 +190,5 @@ class GeoLabelUtil:
             pool.submit(pool_wrapper, Path(img_dir) / f,
                         Path(rgb_tg) / (img_index + ".png"),
                         geojsons,
-                        Path(mask_tg) / (img_index + ".png"), colors)
+                        Path(mask_tg) / (img_index + ".png"), classes)
         pool.shutdown(wait=True)

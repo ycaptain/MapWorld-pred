@@ -12,13 +12,14 @@ import pydensecrf.utils as utils
 
 
 class DenseCRF(object):
-    def __init__(self, iter_max, pos_w, pos_xy_std, bi_w, bi_xy_std, bi_rgb_std):
+    def __init__(self, iter_max, pos_w, pos_xy_std, bi_w, bi_xy_std, bi_rgb_std, n_jobs=8):
         self.iter_max = iter_max
         self.pos_w = pos_w
         self.pos_xy_std = pos_xy_std
         self.bi_w = bi_w
         self.bi_xy_std = bi_xy_std
         self.bi_rgb_std = bi_rgb_std
+        self.n_jobs = n_jobs
 
     def __call__(self, image, probmap):
         C, H, W = probmap.shape
@@ -39,3 +40,6 @@ class DenseCRF(object):
         Q = np.array(Q).reshape((C, H, W))
 
         return Q
+
+    def get_n_jobs(self):
+        return self.n_jobs

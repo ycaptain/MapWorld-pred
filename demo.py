@@ -18,8 +18,7 @@ import utils.crf as postps_crf
 
 
 class DemoMain:
-    def __init__(self, args, config):
-        self.args = args.parse_args()
+    def __init__(self, config):
         self.config = config
 
         self.logger = config.get_logger('demo')
@@ -42,10 +41,8 @@ class DemoMain:
             module_args = dict(config["tester"]['postprocessor']['args'])
             self.postprocessor = getattr(postps_crf, module_name)(**module_args)
 
-        self.classes = self.get_classtable()
-
-        self.demo_dir = config.save_dir / "demo"
-        self.demo_dir.mkdir(parents=True, exist_ok=True)
+        self.demo_dir = None
+        self.classes = None
 
     def get_classtable(self):
         if "data_loader" in self.config.config:
@@ -103,14 +100,15 @@ class DemoMain:
             ax.axis("off")
 
         plt.tight_layout()
-        plt.show()
         plt.savefig(self.demo_dir / (str(in_name[0])+"_"+str(in_name[1])))
+        plt.show()
 
     def recur_path(self, file_list):
         for img_path in file_list:
             img_path = Path(img_path)
             if os.path.isfile(img_path):
                 probs, raw_image = self.single(img_path)
+                # res = np.argmax(probs, axis=0)
                 # img = Image.fromarray(res.astype(np.uint8))
                 # Image.eval(img, lambda a: 255 if a >= 1 else 0).show()
                 self.show(probs, raw_image, (os.path.basename(os.path.dirname(img_path)), os.path.basename(img_path)))
@@ -119,8 +117,11 @@ class DemoMain:
             else:
                 self.logger.critical("Cannot open image path: " + str(img_path))
 
-    def main(self):
-        self.recur_path(self.args.image)
+    def main(self, image):
+        self.classes = self.get_classtable()
+        self.demo_dir = self.config.save_dir / "demo"
+        self.demo_dir.mkdir(parents=True, exist_ok=True)
+        self.recur_path(image)
 
 
 if __name__ == '__main__':
@@ -135,5 +136,6 @@ if __name__ == '__main__':
                       help='path to image to be processed')
 
     config = ConfigParser.from_args(args)
-    m = DemoMain(args, config)
-    m.main()
+    m = DemoMain(config)
+    arg_parsed = args.parse_args()
+    m.main(arg_parsed.image)

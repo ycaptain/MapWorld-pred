@@ -23,18 +23,6 @@ class SpaceNetDataLoader(BaseDataLoader):
         img = img.resize((w, h), resample=Image.NEAREST)
         img = np.asarray(img, dtype=np.uint8)
 
-        # pad_h = max(self.crop_size - h, 0)
-        # pad_w = max(self.crop_size - w, 0)
-        # pad_kwargs = {
-        #     "top": 0,
-        #     "bottom": pad_h,
-        #     "left": 0,
-        #     "right": pad_w,
-        #     "borderType": cv2.BORDER_CONSTANT,
-        # }
-        # if pad_h > 0 or pad_w > 0:
-        #     img = cv2.copyMakeBorder(img, value=self.ignore_label, **pad_kwargs)
-
         # Cropping
         end_h = self.start_h + self.crop_size
         end_w = self.start_w + self.crop_size
@@ -50,18 +38,17 @@ class SpaceNetDataLoader(BaseDataLoader):
         w, h = label.size
         return self._augmentation(label, h, w)
 
-    def __init__(self, data_name, data_dir, batch_size, classes=None, shuffle=True, validation_split=0.0, num_workers=1,
+    def __init__(self, data_name, data_dir, batch_size, data_type, shuffle=True, validation_split=0.0,
+                 num_workers=1,
                  training=True, scales=None, crop_size=325, ignore_label=255):
-        if classes is None:
-            classes = [{"ignore": [0, 0, 0]}, {"building": [255, 0, 0]}, {"road": [0, 0, 255]}]
+        self.data_type = data_type
         ds = list()
         for dn in data_name:
             ds.append(SpaceNetDataset(root=os.path.join(data_dir, dn),
-                                      classes=classes,
                                       train=training,
                                       transform=self.trsfm,
-                                      target_transform=self.trsfm_label))
-        self.classes = classes
+                                      target_transform=self.trsfm_label,
+                                      data_type=self.data_type))
         self.cur_scale = None
         self.scales = scales
         self.crop_size = crop_size

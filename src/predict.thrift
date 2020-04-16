@@ -6,9 +6,8 @@ exception Exception {
 
 struct InitRequest {
   1: string config_path
-  2: string model_path
-  3: optional string fr_addr
-  4: optional i32 fr_port
+  2: optional string fr_addr
+  3: optional i32 fr_port
 }
 
 struct PredRequest {

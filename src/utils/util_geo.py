@@ -7,9 +7,10 @@ from osgeo import gdal, ogr
 from PIL import Image
 import threading
 from pathlib import Path
+import cv2
 
 
-class GeoLabelUtil:
+class GeoLabelUtil(object):
     class GeoImgUtil:
         img = None
         meta = None
@@ -72,45 +73,29 @@ class GeoLabelUtil:
             dist_img = dist_img.convert(mode='RGB')
             dist_img.save(str(filename))
 
-        # @staticmethod
-        # def save_indexed(img, classes, filename):
-        #     dist_img = Image.fromarray(img)
-        #     dist_img = dist_img.convert(mode='RGB').convert('P', palette=Image.ADAPTIVE, colors=len(classes))
-        #     dist_img.putpalette([item for sublist in classes.values() for item in sublist])
-        #     dist_img.save(str(filename))
+    class BuildingRenderThread(threading.Thread):
+        def __init__(self, img_src, tg_img, gjpath=None, mask_img=None):
+            """
+            Args: img_src: Source image path (Raw satellite image)
+                  tg_img: target image (RGB) output path
+                  gjpath: location to the geojson file
+                  mask_img: geojson mask output path
+            """
+            threading.Thread.__init__(self)
+            util = GeoLabelUtil()
+            self.util = util.GeoImgUtil()
+            self.img_src = img_src
+            self.tg_img = tg_img
+            if gjpath is not None and mask_img is not None:
+                self.gjpath = gjpath
+                self.ras_img = mask_img
+                self.do_mask = True
 
-    class GeoJsonUtil:
-
-        def load_geojson(self, filename):
-            # Ref: https://pcjericks.github.io/py-gdalogr-cookbook/layers.html
-            # https://www.osgeo.cn/python_gdal_utah_tutorial/ch05.html
-            lfile = ogr.Open(str(filename))
-            return lfile
-
-        # @staticmethod
-        # def render(meta, layer, prev_res=None):
-        #     x = meta["RasterXSize"]
-        #     y = meta["RasterYSize"]
-        #     x_min, x_max, y_min, y_max = layer.GetExtent()
-        #     # https://www.programcreek.com/python/example/101827/gdal.RasterizeLayer
-        #     driver = gdal.GetDriverByName('MEM')
-        #     if prev_res is None:
-        #         dst_ds = driver.Create("", x, y, 3, gdal.GDT_Byte)
-        #     else:
-        #         dst_ds = prev_res
-        #     if x_min == 0 and x_max == 0 and y_min == 0 and y_max == 0:
-        #         dst_ds.SetGeoTransform(meta["GeoTransform"])
-        #     else:
-        #         dst_ds.SetGeoTransform((x_min, (x_max - x_min) / x, 0,
-        #                                y_max, 0, -(y_max - y_min) / y))
-        #     dst_ds.SetProjection(meta["Projection"])
-        #     gdal.RasterizeLayer(dst_ds, [1, 2, 3], layer, burn_values=[255])
-        #     # img = dst_ds.ReadAsArray()
-        #     # img = np.moveaxis(img, 0, -1)
-        #     return dst_ds
-
-        @staticmethod
-        def render(meta, layer):
+        def render(self, meta, gjpath):
+            lfile = ogr.Open(str(gjpath))
+            if lfile is None:
+                return None
+            layer = lfile.GetLayer()
             x = meta["RasterXSize"]
             y = meta["RasterYSize"]
             # https://www.programcreek.com/python/example/101827/gdal.RasterizeLayer
@@ -122,26 +107,6 @@ class GeoLabelUtil:
             img = dst_ds.ReadAsArray()
             return img
 
-    class RenderThread(threading.Thread):
-        def __init__(self, img_src, tg_img, cls_gjpath=None, mask_img=None, clses=None):
-            """
-            Args: img_src: Source image path (Raw satellite image)
-                  tg_img: target image (RGB) output path
-                  geojson_src:
-                  mask_img: geojson mask output path
-            """
-            threading.Thread.__init__(self)
-            util = GeoLabelUtil()
-            self.util = util.GeoImgUtil()
-            self.img_src = img_src
-            self.tg_img = tg_img
-            if cls_gjpath is not None and mask_img is not None:
-                self.cls_gjpath = cls_gjpath
-                self.ras_img = mask_img
-                self.geojson_util = util.GeoJsonUtil()
-                self.do_mask = True
-                self.classes = clses
-
         def run(self):
             img = self.util.load_geotiff(self.img_src)
             rimg = self.util.normalize_img(img.ReadAsArray())
@@ -150,45 +115,42 @@ class GeoLabelUtil:
             if self.do_mask:
                 meta = self.util.read_meta(img)
                 pic_res = Image.new("P", (meta["RasterXSize"], meta["RasterYSize"]))
-                # [{"ignore": [0, 0, 0]}, {"building": [255, 0, 0]}, {"road": [0, 0, 255]}]
-                pl1 = [item for sublist in self.classes for item in sublist.values()]
-                # [[0, 0, 0], [255, 0, 0], [0, 0, 255]]
-                # [0, 0, 0, 255, 0, 0, 0, 0, 255]
-                pic_res.putpalette([item for sublist in pl1 for item in sublist])
-                for k, v in self.cls_gjpath.items():
-                    # cls_gj: {"building": "****_img1.geojson", "road": "****_img1.geojson"}
-                    f_load = self.geojson_util.load_geojson(v)
-                    if f_load is not None:
-                        rend = self.geojson_util.render(meta, f_load.GetLayer())
-                        if rend is not None:
-                            rend = Image.fromarray(rend).convert('L')
-                            pic_res.paste([i for i, d in enumerate(self.classes) if k in d.keys()][0], rend)
-                            pic_res.save(self.ras_img, optimize=1)
-                            print("Mask saved to", self.ras_img)
+                pic_res.putpalette([0, 0, 0, 255, 255, 255])
+                rend = self.render(meta, self.gjpath)
+                if rend is not None:
+                    rend = Image.fromarray(rend).convert('L')
+                    pic_res.paste(1, rend)
+                    pic_res.save(self.ras_img, optimize=1)
+                    print("Mask saved to", self.ras_img)
+
+    class RoadRenderThread(BuildingRenderThread):
+        def render(self, meta, gjpath):
+            return super().render(meta, gjpath)
 
     @staticmethod
-    def preprocess(img_dir, geojson_dir, rgb_tg, mask_tg, classes, num_workers=4):
+    def preprocess(data_type, img_dir, geojson_dir, rgb_tg, mask_tg, num_workers=4):
         pool = ThreadPoolExecutor(max_workers=num_workers)
         re_img_index = re.compile("img\d+")
         re_pat = re.compile("(.*?)img\d+")
-        building_pat = re_pat.search(os.listdir(Path(geojson_dir) / "buildings")[0]).group(1)
-        # road_pat = re_pat.search(os.listdir(geojson_dir / "roads")[0]).group(1)
+        # building_pat = re_pat.search(os.listdir(Path(geojson_dir) / "buildings")[0]).group(1)
+        pat = re_pat.search(os.listdir(Path(geojson_dir))[0]).group(1)
 
         for f in os.listdir(img_dir):
             img_index = re_img_index.search(f).group(0)
-            geojsons = {"building": Path(geojson_dir) / "buildings" / (building_pat + img_index + ".geojson")}
+            geojson = Path(geojson_dir) / (pat + img_index + ".geojson")
 
-            # geojsons = {"road": Path(geojson_dir) / "roads" / (road_pat + img_index + ".geojson")}
-            # geojsons = {"building": Path(geojson_dir) / "buildings" / (building_pat + img_index + ".geojson"),
-            #             "road": Path(geojson_dir) / "roads" / (road_pat + img_index + ".geojson")}
-
-            def pool_wrapper(p1, p2, p3, p4, p5):
-                thread = GeoLabelUtil.RenderThread(p1, p2, p3, p4, p5)
+            def pool_wrapper(p1, p2, p3, p4):
+                if data_type == "building":
+                    thread = GeoLabelUtil.BuildingRenderThread(p1, p2, p3, p4)
+                elif data_type == "road":
+                    thread = GeoLabelUtil.RoadRenderThread(p1, p2, p3, p4)
+                else:
+                    raise NotImplementedError("Not Implemented Data Type: " + data_type)
                 thread.run()
                 # thread.start()
 
             pool.submit(pool_wrapper, Path(img_dir) / f,
                         Path(rgb_tg) / (img_index + ".png"),
-                        geojsons,
-                        Path(mask_tg) / (img_index + ".png"), classes)
+                        geojson,
+                        Path(mask_tg) / (img_index + ".png"))
         pool.shutdown(wait=True)

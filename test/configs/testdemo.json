@@ -1,0 +1,49 @@
+{
+  "name": "PackedModels",
+  "createTime": 1586715511,
+  "description": "Satellite models",
+  "models": [
+    {
+      "name": "Building-Deeplab",
+      "path": "model_best.pth",
+      "arch": {
+        "type": "DeepLab",
+        "args": {
+          "num_classes": 2,
+          "backbone": "mobilenet"
+        }
+      },
+      "tester": {
+        "postprocessor": {
+          "type": "DenseCRF",
+          "args": {
+            "iter_max": 10,
+            "pos_w": 3,
+            "pos_xy_std": 1,
+            "bi_w": 4,
+            "bi_xy_std": 67,
+            "bi_rgb_std": 3,
+            "n_jobs": 8
+          }
+        },
+        "save_logits": true,
+        "crop_size": 325
+      }
+    },
+    {
+      "name": "Road-UNet",
+      "path": "model_best.pth",
+      "arch": {
+        "type": "UNet",
+        "args": {
+            "n_channels": 3,
+            "n_classes": 2
+        }
+      },
+      "tester": {
+        "save_logits": true,
+        "crop_size": 325
+      }
+    }
+  ]
+}

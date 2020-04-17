@@ -17,7 +17,7 @@ import model as module_arch
 import utils.crf as postps_crf
 
 
-class DemoMain:
+class BuildingDemoMain:
     def __init__(self, config):
         self.config = config
 
@@ -27,7 +27,7 @@ class DemoMain:
         torch.set_grad_enabled(False)
         self.model = config.init_obj('arch', module_arch)
         self.logger.info('Loading checkpoint: {} ...'.format(config.resume))
-        checkpoint = torch.load(config.resume, map_location=torch.device('cpu'))
+        checkpoint = torch.load(config.resume)
         state_dict = checkpoint['state_dict']
         if config['n_gpu'] > 1:
             self.model = torch.nn.DataParallel(self.model)
@@ -136,6 +136,6 @@ if __name__ == '__main__':
                       help='path to image to be processed')
 
     config = ConfigParser.from_args(args)
-    m = DemoMain(config)
+    m = BuildingDemoMain(config)
     arg_parsed = args.parse_args()
     m.main(arg_parsed.image)

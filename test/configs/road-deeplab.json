@@ -1,34 +1,30 @@
 {
-    "name": "DeepLabTest",
+    "name": "Road-Deeplab",
     "n_gpu": 1,
     "log_config": "src/logger/logger_config.json",
     "arch": {
          "type": "DeepLab",
          "args": {
-             "num_classes": 3,
+             "num_classes": 2,
              "backbone": "mobilenet"
          }
     },
     "data_loader": {
         "type": "SpaceNetDataLoader",
         "args":{
+            "data_type": "road",
             "data_name": [
-                "AOI_2_Vegas_Train",
-                "AOI_3_Paris_Train",
-                "AOI_4_Shanghai_Train",
-                "AOI_5_Khartoum_Train"
+                "AOI_2_Vegas",
+                "AOI_3_Paris",
+                "AOI_4_Shanghai",
+                "AOI_5_Khartoum"
             ],
-            "data_dir": "data/FYPData/spacenet",
+            "data_dir": "data/FYPData/spacenet/roads",
             "batch_size": 25,
             "shuffle": true,
             "validation_split": 0.1,
             "num_workers": 4,
-            "classes": [
-                {"background": [0, 0, 0]},
-                {"building": [255, 0, 0]},
-                {"road": [0, 0, 255]}
-            ],
-            "scales": [0.5, 0.75, 1.0, 1.25, 1.5],
+            "scales": [0.25],
             "crop_size": 325
         }
     },
@@ -43,7 +39,7 @@
         {
             "type": "SegEvaluator",
             "args": {
-                "num_class": 3
+                "num_class": 2
             }
         }
     ],
@@ -64,9 +60,9 @@
     "trainer": {
         "type": "DeeplabTrainer",
         "args": {},
-        "epochs": 100,
+        "epochs": 300,
         "save_dir": "saved/",
-        "save_period": 10,
+        "save_period": 20,
         "verbosity": 2,
         "monitor": "max val_mIoU",
         "early_stop": 20,

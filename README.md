@@ -54,7 +54,8 @@ Run the following command to generate Thrift binding code.
 
 ```bash
 cd src
-thrift --gen py service.thrift
+rm -r gen-py
+thrift --gen py predict.thrift
 ```
 
 ### Config file format

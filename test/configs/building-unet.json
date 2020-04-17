@@ -1,0 +1,72 @@
+{
+    "name": "Building-UNet",
+    "n_gpu": 1,
+    "log_config": "src/logger/logger_config.json",
+    "arch": {
+         "type": "UNet",
+         "args": {
+             "n_channels": 3,
+             "n_classes": 2
+         }
+    },
+    "data_loader": {
+        "type": "SpaceNetDataLoader",
+        "args":{
+            "data_type": "building",
+            "data_name": [
+                "AOI_2_Vegas_Train",
+                "AOI_3_Paris_Train",
+                "AOI_4_Shanghai_Train",
+                "AOI_5_Khartoum_Train"
+            ],
+            "data_dir": "data/FYPData/spacenet/buildings",
+            "batch_size": 10,
+            "shuffle": true,
+            "validation_split": 0.1,
+            "num_workers": 4,
+            "scales": [0.5, 0.75, 1.0, 1.25, 1.5],
+            "crop_size": 325
+        }
+    },
+    "loss": {
+        "type": "SegmentationLosses",
+        "args": {
+            "mode": "ce",
+            "ignore_index": 255
+        }
+    },
+    "metrics": [
+        {
+            "type": "SegEvaluator",
+            "args": {
+                "num_class": 2
+            }
+        }
+    ],
+    "optimizer": {
+        "type": "RMSprop",
+        "args":{
+            "lr": 0.01,
+            "weight_decay": 1e-8
+        }
+    },
+    "lr_scheduler": {
+        "type": "PolynomialLR",
+        "args": {
+            "step_size": 10,
+            "iter_max": 20000,
+            "power": 0.9
+        }
+    },
+    "trainer": {
+        "type": "UNetTrainer",
+        "args": {},
+        "epochs": 300,
+        "save_dir": "saved/",
+        "save_period": 20,
+        "verbosity": 2,
+        "monitor": "max val_mIoU",
+        "early_stop": 20,
+        "tensorboard": false
+    }
+}

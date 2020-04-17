@@ -17,12 +17,11 @@ class GeoDataset(data.Dataset):
         """
     files = []
 
-    def __init__(self, root, classes, train=True, transform=None, target_transform=None):
+    def __init__(self, root, train=True, transform=None, target_transform=None):
         self.root = os.path.expanduser(root)
         self.transform = transform
         self.target_transform = target_transform
         self.train = train  # training set or test set
-        self.classes = classes
         self.files = []
         self._set_files()
 

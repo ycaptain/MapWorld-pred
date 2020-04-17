@@ -3,10 +3,10 @@
     "n_gpu": 1,
     "log_config": "src/logger/logger_config.json",
     "arch": {
-         "type": "UNet",
+         "type": "DeepLab",
          "args": {
-             "n_channels": 3,
-             "n_classes": 2
+             "num_classes": 2,
+             "backbone": "mobilenet"
          }
     },
     "data_loader": {
@@ -20,7 +20,7 @@
                 "AOI_5_Khartoum"
             ],
             "data_dir": "data/FYPData/spacenet/roads",
-            "batch_size": 10,
+            "batch_size": 25,
             "shuffle": true,
             "validation_split": 0.1,
             "num_workers": 4,
@@ -60,7 +60,7 @@
     "trainer": {
         "type": "DeeplabTrainer",
         "args": {},
-        "epochs": 100,
+        "epochs": 300,
         "save_dir": "saved/",
         "save_period": 20,
         "verbosity": 2,

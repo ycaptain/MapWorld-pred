@@ -119,16 +119,24 @@ class GeoLabelUtil(object):
                 rend = self.render(meta, self.gjpath)
                 if rend is not None:
                     rend = Image.fromarray(rend).convert('L')
-                    pic_res.paste(1, rend)
-                    pic_res.save(self.ras_img, optimize=1)
-                    print("Mask saved to", self.ras_img)
+                else:
+                    rend = Image.new("L", (meta["RasterXSize"], meta["RasterYSize"]))
+                pic_res.paste(1, rend)
+                pic_res.save(self.ras_img, optimize=1)
+                print("Mask saved to", self.ras_img)
 
     class RoadRenderThread(BuildingRenderThread):
         def render(self, meta, gjpath):
-            return super().render(meta, gjpath)
+            img = super().render(meta, gjpath)
+            if img is None:
+                return None
+            # Ref: https://xbuba.com/questions/46895772
+            kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (12, 12))
+            dilate = cv2.dilate(img, kernel, iterations=1)
+            return dilate
 
     @staticmethod
-    def preprocess(data_type, img_dir, geojson_dir, rgb_tg, mask_tg, num_workers=4):
+    def preprocess(data_type, img_dir, geojson_dir, rgb_tg, mask_tg, num_workers=8):
         pool = ThreadPoolExecutor(max_workers=num_workers)
         re_img_index = re.compile("img\d+")
         re_pat = re.compile("(.*?)img\d+")

@@ -60,7 +60,7 @@
     "trainer": {
         "type": "DeeplabTrainer",
         "args": {},
-        "epochs": 100,
+        "epochs": 300,
         "save_dir": "saved/",
         "save_period": 20,
         "verbosity": 2,

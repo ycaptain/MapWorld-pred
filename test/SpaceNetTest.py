@@ -16,17 +16,7 @@ from data_loader.spacenet_loader import SpaceNetDataLoader
 
 class SpaceNetTestCase(unittest.TestCase):
 
-    def test_building_preview(self):
-        dataset = SpaceNetDataLoader(
-            data_name=["AOI_3_Paris_Train"],
-            data_dir="data/FYPData/spacenet/buildings",
-            data_type="building",
-            batch_size=100,
-            shuffle=False,
-            validation_split=0.0,
-            num_workers=0,
-            scales=[0.5, 0.75, 1.0, 1.25, 1.5]
-        )
+    def preview(self, dataset):
         kwargs = {"nrow": 10, "padding": 40}
         for i, (_, images, labels) in enumerate(dataset):
             if i == 0:
@@ -50,16 +40,31 @@ class SpaceNetTestCase(unittest.TestCase):
                 plt.show()
                 break
 
+    def test_building_preview(self):
+        dataset = SpaceNetDataLoader(
+            data_name=["AOI_3_Paris_Train"],
+            data_dir="data/FYPData/spacenet/buildings",
+            data_type="building",
+            batch_size=100,
+            shuffle=False,
+            validation_split=0.0,
+            num_workers=0,
+            scales=[0.5, 0.75, 1.0, 1.25, 1.5]
+        )
+        self.preview(dataset)
+
     def test_road_preview(self):
         dataset = SpaceNetDataLoader(
-            data_name=["AOI_3_Paris"],
+            data_name=["AOI_2_Vegas"],
             data_dir="data/FYPData/spacenet/roads",
             data_type="road",
             batch_size=100,
             shuffle=False,
             validation_split=0.0,
             num_workers=0,
+            scales=[0.5]
         )
+        self.preview(dataset)
 
 
 if __name__ == '__main__':

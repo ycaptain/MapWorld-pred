@@ -10,7 +10,7 @@
          }
     },
     "data_loader": {
-        "type": "SpaceNetDataLoader",
+        "type": "SpaceNetRoadDataLoader",
         "args":{
             "data_type": "road",
             "data_name": [
@@ -20,12 +20,13 @@
                 "AOI_5_Khartoum"
             ],
             "data_dir": "data/FYPData/spacenet/roads",
-            "batch_size": 10,
+            "batch_size": 11,
             "shuffle": true,
             "validation_split": 0.1,
             "num_workers": 4,
-            "scales": [0.25],
-            "crop_size": 325
+            "scales": 0.25,
+            "crop_size": 325,
+            "dilate_size": 10
         }
     },
     "loss": {
@@ -63,10 +64,26 @@
         "args": {},
         "epochs": 300,
         "save_dir": "saved/",
-        "save_period": 20,
+        "save_period": 10,
         "verbosity": 2,
         "monitor": "max val_mIoU",
         "early_stop": 20,
         "tensorboard": false
+    },
+    "tester": {
+        "postprocessor": {
+            "type": "DenseCRF",
+            "args": {
+                "iter_max": 10,
+                "pos_w": 3,
+                "pos_xy_std": 1,
+                "bi_w": 4,
+                "bi_xy_std": 67,
+                "bi_rgb_std": 3,
+                "n_jobs": 8
+            }
+        },
+        "save_logits": true,
+        "crop_size": 325
     }
 }

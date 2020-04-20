@@ -1,6 +1,7 @@
 import unittest
 import os
 import sys
+import json
 import numpy as np
 from PIL import Image
 
@@ -11,20 +12,21 @@ sys.path.insert(0, src_dir)
 os.chdir(root_dir)
 
 from utils.seg_opt import SegmentOutputUtil
+from utils.building_height import random_height
 
 
 class SegOptTest(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        preds = []
-        preds.append(cls.load_img("data/FYPData/1.png"))
-        preds.append(cls.load_img("data/FYPData/2.png"))
-        preds.append(cls.load_img("data/FYPData/3.png"))
-        preds.append(cls.load_img("data/FYPData/4.png"))
-        preds.append(cls.load_img("data/FYPData/5.png"))
-        cls.util = SegmentOutputUtil(None, preds)
-        cls.preds = preds
+        # preds = []
+        pred = cls.load_img("data/FYPData/1.png")
+        # preds.append(cls.load_img("data/FYPData/2.png"))
+        # preds.append(cls.load_img("data/FYPData/3.png"))
+        # preds.append(cls.load_img("data/FYPData/4.png"))
+        # preds.append(cls.load_img("data/FYPData/5.png"))
+        cls.util = SegmentOutputUtil(None, pred)
+        cls.pred = pred
 
     @staticmethod
     def load_img(path):
@@ -33,9 +35,24 @@ class SegOptTest(unittest.TestCase):
         return np.asarray(img, dtype=np.uint8)
 
     def test_bbox(self):
-        res = self.util.get_bounding_box(self.preds)
-        for id, (img, bbox) in enumerate(zip(self.preds, res)):
-            self.util.show_bbox(img, bbox[0])
+        cnts = self.util.get_contours(self.pred)
+        bboxs = self.util.get_bboxs(cnts[0])
+        self.util.show_bbox(self.pred, bboxs)
+
+    def test_encoding(self):
+        cnts = self.util.get_contours(self.pred)
+        bboxs = self.util.get_bboxs(cnts[0])
+
+        def scalar(sc, meta):
+            return sc * 0.1
+
+        buildings = self.util.encoding(bboxs, fun_prop=random_height, fun_scale=scalar)
+        res = json.dumps({
+            "building": buildings
+        })
+        print(res)
+        with open('test/test_res.json', 'w') as f:
+            f.write(res)
 
 
 if __name__ == '__main__':

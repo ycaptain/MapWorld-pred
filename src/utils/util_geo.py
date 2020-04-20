@@ -131,7 +131,7 @@ class GeoLabelUtil(object):
             if img is None:
                 return None
             # Ref: https://xbuba.com/questions/46895772
-            kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (12, 12))
+            kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (4, 4))
             dilate = cv2.dilate(img, kernel, iterations=1)
             return dilate
 

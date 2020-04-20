@@ -10,7 +10,7 @@
          }
     },
     "data_loader": {
-        "type": "SpaceNetDataLoader",
+        "type": "SpaceNetRoadDataLoader",
         "args":{
             "data_type": "road",
             "data_name": [
@@ -24,8 +24,9 @@
             "shuffle": true,
             "validation_split": 0.1,
             "num_workers": 4,
-            "scales": [0.25],
-            "crop_size": 325
+            "scales": 0.25,
+            "crop_size": 325,
+            "dilate_size": 10
         }
     },
     "loss": {
@@ -62,7 +63,7 @@
         "args": {},
         "epochs": 300,
         "save_dir": "saved/",
-        "save_period": 20,
+        "save_period": 10,
         "verbosity": 2,
         "monitor": "max val_mIoU",
         "early_stop": 20,

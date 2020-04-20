@@ -45,7 +45,8 @@ def main(args_parsed):
         except Exception as e:
             print(str(e))
             continue
-    write_json(res, o_path / args_parsed.name+".json")
+    res["models"] = mods
+    write_json(res, o_path / (args_parsed.name+".json"))
 
 
 if __name__ == '__main__':

@@ -1,0 +1,12 @@
+{
+    "name": "City-CycleGAN",
+    "n_gpu": 1,
+    "log_config": "src/logger/logger_config.json",
+    "arch": {
+         "type": "CycleGANModel",
+         "args": {
+             "n_channels": 3,
+             "n_classes": 2
+         }
+    }
+}

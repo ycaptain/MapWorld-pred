@@ -35,8 +35,7 @@ class SrvTest(unittest.TestCase):
 
     def test_init(self):
         self.transport.open()
-        ir = InitRequest("saved/models/DeepLabTest/0331_043602/config.json",
-                         "saved/models/DeepLabTest/0331_043602/model_best.pth")
+        ir = InitRequest("test/configs/testpack/PackedModels.json")
         self.client.initialize(ir)
         self.transport.close()
 

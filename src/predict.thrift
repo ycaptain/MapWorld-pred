@@ -14,8 +14,13 @@ struct PredRequest {
   1: list<string> imgs_path
 }
 
+struct Response {
+  1: i8 code
+  2: optional string msg
+}
+
 service MapWorldService {
-    void initialize(1: InitRequest req) throws (1: Exception e)
-    void deinit()
-    void doPred(1: PredRequest req) throws (1: Exception e)
+    Response initialize(1: InitRequest req) throws (1: Exception e)
+    Response deinit()
+    Response doPred(1: PredRequest req) throws (1: Exception e)
 }

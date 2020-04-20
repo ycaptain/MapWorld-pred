@@ -1,0 +1,77 @@
+{
+    "name": "PackedModels",
+    "createTime": 1587356707,
+    "description": "Test packing model",
+    "models": [
+        {
+            "name": "Building-Deeplab",
+            "arch": {
+                "type": "DeepLab",
+                "args": {
+                    "num_classes": 2,
+                    "backbone": "mobilenet"
+                }
+            },
+            "metrics": [
+                {
+                    "type": "SegEvaluator",
+                    "args": {
+                        "num_class": 2
+                    }
+                }
+            ],
+            "tester": {
+                "postprocessor": {
+                    "type": "DenseCRF",
+                    "args": {
+                        "iter_max": 10,
+                        "pos_w": 3,
+                        "pos_xy_std": 1,
+                        "bi_w": 4,
+                        "bi_xy_std": 67,
+                        "bi_rgb_std": 3,
+                        "n_jobs": 8
+                    }
+                },
+                "save_logits": true,
+                "crop_size": 325
+            },
+            "path": "saved/models/Building-Deeplab/0414_023159/model_best.pth"
+        },
+        {
+            "name": "Road-Deeplab",
+            "arch": {
+                "type": "DeepLab",
+                "args": {
+                    "num_classes": 2,
+                    "backbone": "mobilenet"
+                }
+            },
+            "metrics": [
+                {
+                    "type": "SegEvaluator",
+                    "args": {
+                        "num_class": 2
+                    }
+                }
+            ],
+            "tester": {
+                "postprocessor": {
+                    "type": "DenseCRF",
+                    "args": {
+                        "iter_max": 10,
+                        "pos_w": 3,
+                        "pos_xy_std": 1,
+                        "bi_w": 4,
+                        "bi_xy_std": 67,
+                        "bi_rgb_std": 3,
+                        "n_jobs": 8
+                    }
+                },
+                "save_logits": true,
+                "crop_size": 325
+            },
+            "path": "saved/models/Road-Deeplab/0419_203350/model_best.pth"
+        }
+    ]
+}

@@ -35,6 +35,7 @@ class MapWorldHandler:
 
     def initialize(self, InitRequest):
         if self.srv is None:
+
             config = ConfigParser(ConfigParser.from_file(InitRequest.config_path),
                                   Path(InitRequest.model_path),
                                   dict())

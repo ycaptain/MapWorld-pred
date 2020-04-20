@@ -12,6 +12,7 @@ sys.path.insert(0, src_dir)
 os.chdir(root_dir)
 
 from data_loader.spacenet_loader import SpaceNetDataLoader
+from data_loader.spacenet_road_loader import SpaceNetRoadDataLoader
 
 
 class SpaceNetTestCase(unittest.TestCase):
@@ -54,7 +55,7 @@ class SpaceNetTestCase(unittest.TestCase):
         self.preview(dataset)
 
     def test_road_preview(self):
-        dataset = SpaceNetDataLoader(
+        dataset = SpaceNetRoadDataLoader(
             data_name=["AOI_2_Vegas"],
             data_dir="data/FYPData/spacenet/roads",
             data_type="road",
@@ -62,7 +63,8 @@ class SpaceNetTestCase(unittest.TestCase):
             shuffle=False,
             validation_split=0.0,
             num_workers=0,
-            scales=[0.5]
+            scales=0.5,
+            dilate_size=10
         )
         self.preview(dataset)
 

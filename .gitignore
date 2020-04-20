@@ -111,6 +111,3 @@ datasets/
 .vscode/
 .idea/
 __MACOSX/
-
-# generated python
-gen-py

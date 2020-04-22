@@ -27,7 +27,10 @@ class DemoMain:
         torch.set_grad_enabled(False)
         self.model = config.init_obj('arch', module_arch)
         self.logger.info('Loading checkpoint: {} ...'.format(config.resume))
-        checkpoint = torch.load(config.resume, map_location=torch.device('cpu'))
+        if config['n_gpu'] > 0:
+            checkpoint = torch.load(config.resume)
+        else:
+            checkpoint = torch.load(config.resume, map_location=torch.device('cpu'))
         state_dict = checkpoint['state_dict']
         if config['n_gpu'] > 1:
             self.model = torch.nn.DataParallel(self.model)
@@ -85,7 +88,7 @@ class DemoMain:
     def show(self, probs, raw_img, in_name=("", "")):
         rows = np.floor(np.sqrt(len(probs) + 1))
         cols = np.ceil((len(probs) + 1) / rows)
-        plt.figure(figsize=(10, 10))
+        plt.figure(figsize=(10, 4))
         ax = plt.subplot(rows, cols, 1)
         ax.set_title(in_name[0]+"/"+in_name[1])
         ax.imshow(raw_img)

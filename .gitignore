@@ -111,3 +111,7 @@ datasets/
 .vscode/
 .idea/
 __MACOSX/
+tmp/
+
+# Trained models
+*.pth

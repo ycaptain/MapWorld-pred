@@ -25,3 +25,8 @@ class UNetTrainer(DeeplabTrainer):
         self.log_step = int(np.sqrt(data_loader.batch_size))
         self.train_metrics = metric_ftns[0]
         self.valid_metrics = metric_ftns[0]
+
+        self.logit_dir = None
+        if config["tester"].get("save_logits", False):
+            self.logit_dir = config.save_dir / "logits"
+            self.logit_dir.mkdir(parents=True, exist_ok=True)

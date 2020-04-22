@@ -1,7 +1,6 @@
 {
     "name": "PackedModels",
-    "createTime": 1587356707,
-    "description": "Test packing model",
+    "createTime": 1587551348,
     "models": [
         {
             "name": "Building-Deeplab",
@@ -33,10 +32,31 @@
                         "n_jobs": 8
                     }
                 },
-                "save_logits": true,
                 "crop_size": 325
             },
-            "path": "saved/models/Building-Deeplab/0414_023159/model_best.pth"
+            "path": "test/testpack/building_deeplab.pth"
+        },
+        {
+            "name": "Road-UNet",
+            "arch": {
+                "type": "UNet",
+                "args": {
+                    "n_channels": 3,
+                    "n_classes": 2
+                }
+            },
+            "metrics": [
+                {
+                    "type": "SegEvaluator",
+                    "args": {
+                        "num_class": 2
+                    }
+                }
+            ],
+            "tester": {
+                "crop_size": 325
+            },
+            "path": "test/testpack/road_unet.pth"
         },
         {
             "name": "Road-Deeplab",
@@ -68,10 +88,9 @@
                         "n_jobs": 8
                     }
                 },
-                "save_logits": true,
                 "crop_size": 325
             },
-            "path": "saved/models/Road-Deeplab/0419_203350/model_best.pth"
+            "path": "test/testpack/road_deeplab.pth"
         }
     ]
 }

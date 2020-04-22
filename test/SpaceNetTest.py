@@ -64,7 +64,8 @@ class SpaceNetTestCase(unittest.TestCase):
             validation_split=0.0,
             num_workers=0,
             scales=0.5,
-            dilate_size=10
+            dilate_size=20,
+            ignore_size=10
         )
         self.preview(dataset)
 

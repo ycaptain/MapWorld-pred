@@ -35,8 +35,25 @@ class SrvTest(unittest.TestCase):
 
     def test_init(self):
         self.transport.open()
-        ir = InitRequest("test/configs/testpack/PackedModels.json")
-        self.client.initialize(ir)
+        req = InitRequest("test/testpack/PackedModels.json")
+        res = self.client.initialize(req)
+        print(res)
+        self.transport.close()
+
+    def test_pred_building(self):
+        self.transport.open()
+        test_meta = GeoMeta(XY(0, 0), XY(1, -1))
+        req = PredRequest(["data/FYPData/test/Vegas/img1458.png"], [test_meta], "Building-Deeplab", 1)
+        res = self.client.doPred(req)
+        print(res)
+        self.transport.close()
+
+    def test_pred_road(self):
+        self.transport.open()
+        test_meta = GeoMeta(XY(0, 0), XY(1, -1))
+        req = PredRequest(["data/FYPData/test/Vegas/img1458.png"], [test_meta], "Road-Deeplab", 1, prescale=0.5)
+        res = self.client.doPred(req)
+        print(res)
         self.transport.close()
 
 

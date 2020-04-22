@@ -80,16 +80,14 @@ class InitRequest(object):
     """
     Attributes:
      - config_path
-     - config_type
      - fr_addr
      - fr_port
 
     """
 
 
-    def __init__(self, config_path=None, config_type=None, fr_addr=None, fr_port=None,):
+    def __init__(self, config_path=None, fr_addr=None, fr_port=None,):
         self.config_path = config_path
-        self.config_type = config_type
         self.fr_addr = fr_addr
         self.fr_port = fr_port
 
@@ -109,15 +107,10 @@ class InitRequest(object):
                     iprot.skip(ftype)
             elif fid == 2:
                 if ftype == TType.STRING:
-                    self.config_type = iprot.readString().decode('utf-8') if sys.version_info[0] == 2 else iprot.readString()
-                else:
-                    iprot.skip(ftype)
-            elif fid == 3:
-                if ftype == TType.STRING:
                     self.fr_addr = iprot.readString().decode('utf-8') if sys.version_info[0] == 2 else iprot.readString()
                 else:
                     iprot.skip(ftype)
-            elif fid == 4:
+            elif fid == 3:
                 if ftype == TType.I32:
                     self.fr_port = iprot.readI32()
                 else:
@@ -136,17 +129,151 @@ class InitRequest(object):
             oprot.writeFieldBegin('config_path', TType.STRING, 1)
             oprot.writeString(self.config_path.encode('utf-8') if sys.version_info[0] == 2 else self.config_path)
             oprot.writeFieldEnd()
-        if self.config_type is not None:
-            oprot.writeFieldBegin('config_type', TType.STRING, 2)
-            oprot.writeString(self.config_type.encode('utf-8') if sys.version_info[0] == 2 else self.config_type)
-            oprot.writeFieldEnd()
         if self.fr_addr is not None:
-            oprot.writeFieldBegin('fr_addr', TType.STRING, 3)
+            oprot.writeFieldBegin('fr_addr', TType.STRING, 2)
             oprot.writeString(self.fr_addr.encode('utf-8') if sys.version_info[0] == 2 else self.fr_addr)
             oprot.writeFieldEnd()
         if self.fr_port is not None:
-            oprot.writeFieldBegin('fr_port', TType.I32, 4)
+            oprot.writeFieldBegin('fr_port', TType.I32, 3)
             oprot.writeI32(self.fr_port)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, value)
+             for key, value in self.__dict__.items()]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+    def __ne__(self, other):
+        return not (self == other)
+
+
+class XY(object):
+    """
+    Attributes:
+     - x
+     - y
+
+    """
+
+
+    def __init__(self, x=None, y=None,):
+        self.x = x
+        self.y = y
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.DOUBLE:
+                    self.x = iprot.readDouble()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 2:
+                if ftype == TType.DOUBLE:
+                    self.y = iprot.readDouble()
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
+            return
+        oprot.writeStructBegin('XY')
+        if self.x is not None:
+            oprot.writeFieldBegin('x', TType.DOUBLE, 1)
+            oprot.writeDouble(self.x)
+            oprot.writeFieldEnd()
+        if self.y is not None:
+            oprot.writeFieldBegin('y', TType.DOUBLE, 2)
+            oprot.writeDouble(self.y)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, value)
+             for key, value in self.__dict__.items()]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+    def __ne__(self, other):
+        return not (self == other)
+
+
+class GeoMeta(object):
+    """
+    Attributes:
+     - origin
+     - pixel_size
+
+    """
+
+
+    def __init__(self, origin=None, pixel_size=None,):
+        self.origin = origin
+        self.pixel_size = pixel_size
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.STRUCT:
+                    self.origin = XY()
+                    self.origin.read(iprot)
+                else:
+                    iprot.skip(ftype)
+            elif fid == 2:
+                if ftype == TType.STRUCT:
+                    self.pixel_size = XY()
+                    self.pixel_size.read(iprot)
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
+            return
+        oprot.writeStructBegin('GeoMeta')
+        if self.origin is not None:
+            oprot.writeFieldBegin('origin', TType.STRUCT, 1)
+            self.origin.write(oprot)
+            oprot.writeFieldEnd()
+        if self.pixel_size is not None:
+            oprot.writeFieldBegin('pixel_size', TType.STRUCT, 2)
+            self.pixel_size.write(oprot)
             oprot.writeFieldEnd()
         oprot.writeFieldStop()
         oprot.writeStructEnd()
@@ -170,12 +297,24 @@ class PredRequest(object):
     """
     Attributes:
      - imgs_path
+     - imgs_meta
+     - model_name
+     - n_gpu_use
+     - tmp_opt_path
+     - prescale
+     - batch_size
 
     """
 
 
-    def __init__(self, imgs_path=None,):
+    def __init__(self, imgs_path=None, imgs_meta=None, model_name=None, n_gpu_use=None, tmp_opt_path=None, prescale=None, batch_size=None,):
         self.imgs_path = imgs_path
+        self.imgs_meta = imgs_meta
+        self.model_name = model_name
+        self.n_gpu_use = n_gpu_use
+        self.tmp_opt_path = tmp_opt_path
+        self.prescale = prescale
+        self.batch_size = batch_size
 
     def read(self, iprot):
         if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
@@ -196,6 +335,42 @@ class PredRequest(object):
                     iprot.readListEnd()
                 else:
                     iprot.skip(ftype)
+            elif fid == 2:
+                if ftype == TType.LIST:
+                    self.imgs_meta = []
+                    (_etype9, _size6) = iprot.readListBegin()
+                    for _i10 in range(_size6):
+                        _elem11 = GeoMeta()
+                        _elem11.read(iprot)
+                        self.imgs_meta.append(_elem11)
+                    iprot.readListEnd()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 3:
+                if ftype == TType.STRING:
+                    self.model_name = iprot.readString().decode('utf-8') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 4:
+                if ftype == TType.BYTE:
+                    self.n_gpu_use = iprot.readByte()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 5:
+                if ftype == TType.STRING:
+                    self.tmp_opt_path = iprot.readString().decode('utf-8') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 6:
+                if ftype == TType.DOUBLE:
+                    self.prescale = iprot.readDouble()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 7:
+                if ftype == TType.BYTE:
+                    self.batch_size = iprot.readByte()
+                else:
+                    iprot.skip(ftype)
             else:
                 iprot.skip(ftype)
             iprot.readFieldEnd()
@@ -209,9 +384,36 @@ class PredRequest(object):
         if self.imgs_path is not None:
             oprot.writeFieldBegin('imgs_path', TType.LIST, 1)
             oprot.writeListBegin(TType.STRING, len(self.imgs_path))
-            for iter6 in self.imgs_path:
-                oprot.writeString(iter6.encode('utf-8') if sys.version_info[0] == 2 else iter6)
+            for iter12 in self.imgs_path:
+                oprot.writeString(iter12.encode('utf-8') if sys.version_info[0] == 2 else iter12)
             oprot.writeListEnd()
+            oprot.writeFieldEnd()
+        if self.imgs_meta is not None:
+            oprot.writeFieldBegin('imgs_meta', TType.LIST, 2)
+            oprot.writeListBegin(TType.STRUCT, len(self.imgs_meta))
+            for iter13 in self.imgs_meta:
+                iter13.write(oprot)
+            oprot.writeListEnd()
+            oprot.writeFieldEnd()
+        if self.model_name is not None:
+            oprot.writeFieldBegin('model_name', TType.STRING, 3)
+            oprot.writeString(self.model_name.encode('utf-8') if sys.version_info[0] == 2 else self.model_name)
+            oprot.writeFieldEnd()
+        if self.n_gpu_use is not None:
+            oprot.writeFieldBegin('n_gpu_use', TType.BYTE, 4)
+            oprot.writeByte(self.n_gpu_use)
+            oprot.writeFieldEnd()
+        if self.tmp_opt_path is not None:
+            oprot.writeFieldBegin('tmp_opt_path', TType.STRING, 5)
+            oprot.writeString(self.tmp_opt_path.encode('utf-8') if sys.version_info[0] == 2 else self.tmp_opt_path)
+            oprot.writeFieldEnd()
+        if self.prescale is not None:
+            oprot.writeFieldBegin('prescale', TType.DOUBLE, 6)
+            oprot.writeDouble(self.prescale)
+            oprot.writeFieldEnd()
+        if self.batch_size is not None:
+            oprot.writeFieldBegin('batch_size', TType.BYTE, 7)
+            oprot.writeByte(self.batch_size)
             oprot.writeFieldEnd()
         oprot.writeFieldStop()
         oprot.writeStructEnd()
@@ -306,14 +508,31 @@ all_structs.append(InitRequest)
 InitRequest.thrift_spec = (
     None,  # 0
     (1, TType.STRING, 'config_path', 'UTF8', None, ),  # 1
-    (2, TType.STRING, 'config_type', 'UTF8', None, ),  # 2
-    (3, TType.STRING, 'fr_addr', 'UTF8', None, ),  # 3
-    (4, TType.I32, 'fr_port', None, None, ),  # 4
+    (2, TType.STRING, 'fr_addr', 'UTF8', None, ),  # 2
+    (3, TType.I32, 'fr_port', None, None, ),  # 3
+)
+all_structs.append(XY)
+XY.thrift_spec = (
+    None,  # 0
+    (1, TType.DOUBLE, 'x', None, None, ),  # 1
+    (2, TType.DOUBLE, 'y', None, None, ),  # 2
+)
+all_structs.append(GeoMeta)
+GeoMeta.thrift_spec = (
+    None,  # 0
+    (1, TType.STRUCT, 'origin', [XY, None], None, ),  # 1
+    (2, TType.STRUCT, 'pixel_size', [XY, None], None, ),  # 2
 )
 all_structs.append(PredRequest)
 PredRequest.thrift_spec = (
     None,  # 0
     (1, TType.LIST, 'imgs_path', (TType.STRING, 'UTF8', False), None, ),  # 1
+    (2, TType.LIST, 'imgs_meta', (TType.STRUCT, [GeoMeta, None], False), None, ),  # 2
+    (3, TType.STRING, 'model_name', 'UTF8', None, ),  # 3
+    (4, TType.BYTE, 'n_gpu_use', None, None, ),  # 4
+    (5, TType.STRING, 'tmp_opt_path', 'UTF8', None, ),  # 5
+    (6, TType.DOUBLE, 'prescale', None, None, ),  # 6
+    (7, TType.BYTE, 'batch_size', None, None, ),  # 7
 )
 all_structs.append(Response)
 Response.thrift_spec = (

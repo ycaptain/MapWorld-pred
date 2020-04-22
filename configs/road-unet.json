@@ -1,31 +1,34 @@
 {
-    "name": "Building-Deeplab",
+    "name": "Road-UNet",
     "n_gpu": 1,
     "log_config": "src/logger/logger_config.json",
+    "save_dir": "saved/",
     "arch": {
-         "type": "DeepLab",
+         "type": "UNet",
          "args": {
-             "num_classes": 2,
-             "backbone": "mobilenet"
+             "n_channels": 3,
+             "n_classes": 2
          }
     },
     "data_loader": {
-        "type": "SpaceNetDataLoader",
+        "type": "SpaceNetRoadDataLoader",
         "args":{
-            "data_type": "building",
+            "data_type": "road",
             "data_name": [
-                "AOI_2_Vegas_Train",
-                "AOI_3_Paris_Train",
-                "AOI_4_Shanghai_Train",
-                "AOI_5_Khartoum_Train"
+                "AOI_2_Vegas",
+                "AOI_3_Paris",
+                "AOI_4_Shanghai",
+                "AOI_5_Khartoum"
             ],
-            "data_dir": "data/FYPData/spacenet/buildings",
-            "batch_size": 25,
+            "data_dir": "data/FYPData/spacenet/roads",
+            "batch_size": 10,
             "shuffle": true,
             "validation_split": 0.1,
             "num_workers": 4,
-            "scales": [0.5, 0.75, 1.0, 1.25, 1.5],
-            "crop_size": 325
+            "scales": 0.25,
+            "crop_size": 325,
+            "dilate_size": 25,
+            "ignore_size": 12
         }
     },
     "loss": {
@@ -44,10 +47,11 @@
         }
     ],
     "optimizer": {
-        "type": "SGD",
-        "weight_decay": 5.0e-4,
-        "momentum": 0.9,
-        "lr": 0.001
+        "type": "Adam",
+        "args": {
+            "weight_decay": 0.0005,
+            "lr": 0.001
+        }
     },
     "lr_scheduler": {
         "type": "PolynomialLR",
@@ -58,11 +62,10 @@
         }
     },
     "trainer": {
-        "type": "DeeplabTrainer",
+        "type": "UNetTrainer",
         "args": {},
         "epochs": 300,
-        "save_dir": "saved/",
-        "save_period": 20,
+        "save_period": 10,
         "verbosity": 2,
         "monitor": "max val_mIoU",
         "early_stop": 20,

@@ -2,6 +2,7 @@
     "name": "City-CycleGAN",
     "n_gpu": 1,
     "log_config": "src/logger/logger_config.json",
+    "save_dir": "saved/",
     "arch": {
          "type": "CycleGANModel",
          "args": {

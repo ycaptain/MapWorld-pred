@@ -2,8 +2,6 @@ import unittest
 import os
 import sys
 import json
-import numpy as np
-from PIL import Image
 
 root_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 src_dir = os.path.join(root_dir, "src")
@@ -20,19 +18,14 @@ class SegOptTest(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         # preds = []
-        pred = cls.load_img("data/FYPData/1.png")
+        # pred = cls.load_img("data/FYPData/1.png")
+        pred = SegmentOutputUtil.load_img("data/FYPData/2.png")
         # preds.append(cls.load_img("data/FYPData/2.png"))
         # preds.append(cls.load_img("data/FYPData/3.png"))
         # preds.append(cls.load_img("data/FYPData/4.png"))
         # preds.append(cls.load_img("data/FYPData/5.png"))
-        cls.util = SegmentOutputUtil(None, pred)
+        cls.util = SegmentOutputUtil(pred)
         cls.pred = pred
-
-    @staticmethod
-    def load_img(path):
-        img = Image.open(path)
-        # img = Image.eval(img, lambda a: 1 if a == 255 else 0)
-        return np.asarray(img, dtype=np.uint8)
 
     def test_bbox(self):
         cnts = self.util.get_contours(self.pred)
@@ -48,7 +41,51 @@ class SegOptTest(unittest.TestCase):
 
         buildings = self.util.encoding(bboxs, fun_prop=random_height, fun_scale=scalar)
         res = json.dumps({
-            "building": buildings
+            "buildings": buildings,
+            "road": [
+                {
+                    "coordinates": [
+                        {
+                            "x": 0.0,
+                            "y": 5.2,
+                            "z": 0
+                        },
+                        {
+                            "x": 32.5,
+                            "y": 5.9,
+                            "z": 0
+                        }
+                    ]
+                },
+                {
+                    "coordinates": [
+                        {
+                            "x": 0.0,
+                            "y": 14.3,
+                            "z": 0
+                        },
+                        {
+                            "x": 32.5,
+                            "y": 15.45,
+                            "z": 0
+                        }
+                    ]
+                },
+                {
+                    "coordinates": [
+                        {
+                            "x": 0.0,
+                            "y": 23.45,
+                            "z": 0
+                        },
+                        {
+                            "x": 32.5,
+                            "y": 23.85,
+                            "z": 0
+                        }
+                    ]
+                }
+            ]
         })
         print(res)
         with open('test/test_res.json', 'w') as f:

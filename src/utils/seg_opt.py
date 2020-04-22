@@ -2,11 +2,18 @@ import cv2
 import numpy as np
 import json
 
+from PIL import Image
+
 
 class SegmentOutputUtil:
-    def __init__(self, raw_img, pred):
-        self.raw_img = raw_img
+    def __init__(self, pred):
         self.pred = pred
+
+    @staticmethod
+    def load_img(path):
+        img = Image.open(path)
+        # img = Image.eval(img, lambda a: 1 if a >= 128 else 0)
+        return np.asarray(img, dtype=np.uint8)
 
     @staticmethod
     def get_contours(pred):
@@ -114,8 +121,8 @@ class SegmentOutputUtil:
                 coord = dict()
                 if fun_scale is not None:
                     c = fun_scale(c, meta)
-                coord["x"] = c[0]
-                coord["y"] = c[1]
+                coord["x"] = int(c[0])
+                coord["y"] = int(c[1])
                 coord["z"] = 0
                 coords.append(coord)
             targ["coordinates"] = coords

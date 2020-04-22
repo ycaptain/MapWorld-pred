@@ -2,6 +2,7 @@
     "name": "Building-UNet",
     "n_gpu": 1,
     "log_config": "src/logger/logger_config.json",
+    "save_dir": "saved/",
     "arch": {
          "type": "UNet",
          "args": {
@@ -62,7 +63,6 @@
         "type": "UNetTrainer",
         "args": {},
         "epochs": 300,
-        "save_dir": "saved/",
         "save_period": 20,
         "verbosity": 2,
         "monitor": "max val_mIoU",

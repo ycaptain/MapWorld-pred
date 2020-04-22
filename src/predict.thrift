@@ -10,8 +10,24 @@ struct InitRequest {
   3: optional i32 fr_port
 }
 
+struct XY {
+  1: double x
+  2: double y
+}
+
+struct GeoMeta {
+  1: XY origin //Upper left
+  2: XY pixel_size
+}
+
 struct PredRequest {
   1: list<string> imgs_path
+  2: list<GeoMeta> imgs_meta
+  3: string model_name
+  4: i8 n_gpu_use
+  5: optional string tmp_opt_path
+  6: optional double prescale
+  7: optional i8 batch_size
 }
 
 struct Response {

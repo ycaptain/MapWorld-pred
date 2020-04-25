@@ -139,6 +139,7 @@ if __name__ == '__main__':
                       help='path to image to be processed')
 
     config = ConfigParser.from_args(args)
+    config.init_log()
     m = DemoMain(config)
     arg_parsed = args.parse_args()
     m.main(arg_parsed.image)

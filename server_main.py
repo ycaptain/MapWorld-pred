@@ -15,9 +15,7 @@ sys.path.append(os.path.join(src_dir, "gen-py"))
 from mapworld import MapWorldService
 from mapworld.ttypes import *
 
-from utils.srv_helper import ModelPackLoader
-
-from server import ServerMain
+from server import ServerMain, ModelPackLoader
 
 
 class MapWorldHandler:

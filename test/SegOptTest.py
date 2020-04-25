@@ -24,7 +24,14 @@ class SegOptTest(unittest.TestCase):
         # preds.append(cls.load_img("data/FYPData/3.png"))
         # preds.append(cls.load_img("data/FYPData/4.png"))
         # preds.append(cls.load_img("data/FYPData/5.png"))
-        cls.util = SegmentOutputUtil(pred)
+        w, h = pred.shape
+
+        meta = {
+            "w": w,
+            "h": h
+        }
+
+        cls.util = SegmentOutputUtil(pred, meta)
         cls.pred = pred
 
     def test_bbox(self):
@@ -36,10 +43,7 @@ class SegOptTest(unittest.TestCase):
         cnts = self.util.get_contours(self.pred)
         bboxs = self.util.get_bboxs(cnts[0])
 
-        def scalar(sc, meta):
-            return sc * 0.1
-
-        buildings = self.util.encoding(bboxs, fun_prop=random_height, fun_scale=scalar)
+        buildings = self.util.encoding(bboxs, self.util.meta, fun_prop=random_height)
         res = json.dumps({
             "buildings": buildings,
             "road": [

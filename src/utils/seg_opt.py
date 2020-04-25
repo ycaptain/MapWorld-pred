@@ -6,8 +6,9 @@ from PIL import Image
 
 
 class SegmentOutputUtil:
-    def __init__(self, pred):
+    def __init__(self, pred, meta):
         self.pred = pred
+        self.meta = meta
 
     @staticmethod
     def load_img(path):
@@ -109,10 +110,18 @@ class SegmentOutputUtil:
           ...
         ]
     }
-    
     '''
+
     @staticmethod
-    def encoding(items, meta=None, fun_prop=None, fun_scale=None):
+    def def_fun_scale(sc, meta):
+        # flip y axis
+        y = meta["h"]
+        sc[1] = y - sc[1]
+        sc = sc * 0.1
+        return sc
+
+    @staticmethod
+    def encoding(items, meta, fun_prop=None, fun_scale=def_fun_scale.__func__):
         res = list()
         for a_item in items:
             targ = dict()
@@ -134,11 +143,8 @@ class SegmentOutputUtil:
     def get_result(self):
         cnts = self.get_contours(self.pred)
         bboxs = self.get_bboxs(cnts[0])
-        building = self.encoding(bboxs)
+        building = self.encoding(bboxs, self.meta)
         res = dict()
-        res["meta"] = {
-            "x": 0,
-            "y": 0
-        }
+        res["meta"] = self.meta
         res["building"] = building
         return json.dumps(res)

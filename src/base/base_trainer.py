@@ -80,7 +80,6 @@ class BaseTrainer:
                 self.logger.info('    {:15s}: {}'.format(str(key), value))
 
             # evaluate model performance according to configured metric, save best checkpoint as model_best
-            best = False
             if self.mnt_mode != 'off':
                 try:
                     # check whether model performance improved or not, according to specified metric(mnt_metric)
@@ -95,7 +94,8 @@ class BaseTrainer:
                 if improved:
                     self.mnt_best = log[self.mnt_metric]
                     not_improved_count = 0
-                    best = True
+                    # Save best now
+                    self._save_checkpoint(epoch, save_best=True)
                 else:
                     not_improved_count += 1
 
@@ -105,7 +105,7 @@ class BaseTrainer:
                     break
 
             if epoch % self.save_period == 0:
-                self._save_checkpoint(epoch, save_best=best)
+                self._save_checkpoint(epoch, save_best=False)
 
     def _save_checkpoint(self, epoch, save_best=False):
         """
@@ -124,13 +124,15 @@ class BaseTrainer:
             'monitor_best': self.mnt_best,
             'config': self.config
         }
-        filename = str(self.checkpoint_dir / 'checkpoint-epoch{}.pth'.format(epoch))
-        torch.save(state, filename)
-        self.logger.info("Saving checkpoint: {} ...".format(filename))
+
         if save_best:
             best_path = str(self.checkpoint_dir / 'model_best.pth')
             torch.save(state, best_path)
             self.logger.info("Saving current best: model_best.pth ...")
+        else:
+            filename = str(self.checkpoint_dir / 'checkpoint-epoch{}.pth'.format(epoch))
+            torch.save(state, filename)
+            self.logger.info("Saving checkpoint: {} ...".format(filename))
 
     def _resume_checkpoint(self, resume_path):
         """

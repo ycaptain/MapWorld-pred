@@ -1,5 +1,5 @@
 import os
-from .util import read_json
+from utils.util import read_json
 
 
 class ModelPackLoader:

@@ -35,4 +35,5 @@ if __name__ == '__main__':
                       help='indices of GPUs to enable (default: all)')
 
     config = ConfigParser.from_args(args)
+    config.init_log()
     main(config)

@@ -16,18 +16,16 @@ else:
 from thrift.transport import TTransport, TSocket, TSSLSocket, THttpClient
 from thrift.protocol.TBinaryProtocol import TBinaryProtocol
 
-from mapworld import MapWorldService
-from mapworld.ttypes import *
+from mwfrontend import MapWorldMain
+from mwfrontend.ttypes import *
 
 if len(sys.argv) <= 1 or sys.argv[1] == '--help':
     print('')
     print('Usage: ' + sys.argv[0] + ' [-h host[:port]] [-u url] [-f[ramed]] [-s[sl]] [-novalidate] [-ca_certs certs] [-keyfile keyfile] [-certfile certfile] function [arg1 [arg2...]]')
     print('')
     print('Functions:')
-    print('  Response initialize(InitRequest req)')
-    print('  Response deinit()')
-    print('  Response doPred(PredRequest req)')
-    print('  Response getTask()')
+    print('  Response NotifyProgress(ProgsReq req)')
+    print('  Response NotifyResult(ResultReq req)')
     print('')
     sys.exit(0)
 
@@ -104,32 +102,20 @@ else:
     else:
         transport = TTransport.TBufferedTransport(socket)
 protocol = TBinaryProtocol(transport)
-client = MapWorldService.Client(protocol)
+client = MapWorldMain.Client(protocol)
 transport.open()
 
-if cmd == 'initialize':
+if cmd == 'NotifyProgress':
     if len(args) != 1:
-        print('initialize requires 1 args')
+        print('NotifyProgress requires 1 args')
         sys.exit(1)
-    pp.pprint(client.initialize(eval(args[0]),))
+    pp.pprint(client.NotifyProgress(eval(args[0]),))
 
-elif cmd == 'deinit':
-    if len(args) != 0:
-        print('deinit requires 0 args')
-        sys.exit(1)
-    pp.pprint(client.deinit())
-
-elif cmd == 'doPred':
+elif cmd == 'NotifyResult':
     if len(args) != 1:
-        print('doPred requires 1 args')
+        print('NotifyResult requires 1 args')
         sys.exit(1)
-    pp.pprint(client.doPred(eval(args[0]),))
-
-elif cmd == 'getTask':
-    if len(args) != 0:
-        print('getTask requires 0 args')
-        sys.exit(1)
-    pp.pprint(client.getTask())
+    pp.pprint(client.NotifyResult(eval(args[0]),))
 
 else:
     print('Unrecognized method %s' % cmd)

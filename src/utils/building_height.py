@@ -3,7 +3,7 @@ import random
 
 def random_height(targ, meta):
     res = {
-        "height": random.randint(1, 10)
+        "height": random.randint(5, 18)
     }
     return res
 

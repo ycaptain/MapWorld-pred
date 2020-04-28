@@ -21,14 +21,14 @@
                 "AOI_5_Khartoum"
             ],
             "data_dir": "data/FYPData/spacenet/roads",
-            "batch_size": 25,
+            "batch_size": 7,
             "shuffle": true,
             "validation_split": 0.1,
             "num_workers": 4,
-            "scales": 0.25,
-            "crop_size": 325,
+            "scales": [0.5, 0.75],
+            "crop_size": 650,
             "dilate_size": 20,
-            "ignore_size": 15
+            "ignore_size": 10
         }
     },
     "loss": {
@@ -48,9 +48,11 @@
     ],
     "optimizer": {
         "type": "SGD",
-        "weight_decay": 5.0e-4,
-        "momentum": 0.9,
-        "lr": 0.001
+        "args": {
+            "weight_decay": 5.0e-4,
+            "lr": 0.001,
+            "momentum": 0.9
+        }
     },
     "lr_scheduler": {
         "type": "PolynomialLR",
@@ -84,6 +86,6 @@
             }
         },
         "save_logits": true,
-        "crop_size": 325
+        "crop_size": 650
     }
 }

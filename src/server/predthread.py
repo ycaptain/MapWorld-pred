@@ -57,8 +57,24 @@ class SegPredThread(threading.Thread):
         ps, cp = self.srv.prescale, self.srv.crop_size
         if ps != 1.0:
             image = image.resize((int(W * ps), int(H * ps)), resample=Image.NEAREST)
-            W, H = image.size
         image = np.asarray(image).astype(np.uint8)
+
+        # Padding to fit for crop_size
+        H, W, _ = image.shape
+        pad_h = (cp - (H % cp)) % cp
+        pad_w = (cp - (W % cp)) % cp
+        pad_kwargs = {
+            "top": 0,
+            "bottom": pad_h,
+            "left": 0,
+            "right": pad_w,
+            "borderType": cv2.BORDER_CONSTANT,
+        }
+
+        if pad_h > 0 or pad_w > 0:
+            image = cv2.copyMakeBorder(image, value=0, **pad_kwargs)
+
+        H, W, _ = image.shape
         num_h, num_w = math.ceil(H / cp), math.ceil(W / cp)
 
         count = 0
@@ -71,18 +87,23 @@ class SegPredThread(threading.Thread):
             t_list = t_list.to(self.srv.device)
             probs = self.inference(t_list, raw_img_list, self.srv.postprocessor)
 
-            for res in probs:
+            # save result
+            for res, img in zip(probs, raw_img_list):
                 fname = "{}_{}_{}.png".format(save_name, self.srv.cfg["name"], count)
                 # cv2.imwrite(str(self.target / fname), np.moveaxis(res.astype(np.uint8), 0, -1))
                 cv2.imwrite(str(self.target / fname), res.astype(np.uint8)[1])
+                # save raw img
+                fname = "{}_{}.png".format(save_name, count)
+                cv2.imwrite(str(self.target / fname), img.astype(np.uint8))
                 count += 1
+            return count
 
         for t_img, raw_img in self.img_iter(image, cp, num_h, num_w):
             t_list.append(t_img)
             raw_img_list.append(raw_img)
 
             if len(t_list) >= self.srv.batch_size:
-                do_pred(t_list, raw_img_list, count)
+                count = do_pred(t_list, raw_img_list, count)
 
                 t_list = list()
                 raw_img_list = list()
@@ -105,22 +126,29 @@ class SegPredThread(threading.Thread):
         }
 
     def run(self):
+        count = 0
+        total = len(self.imgs)
         for img_path, meta in zip(self.imgs, self.metas):
             if os.path.isfile(img_path):
                 fname, num_h, num_w = self.single(img_path)
                 count = 0
                 for i in range(0, num_h):
                     for j in range(0, num_w):
-                        img = SegmentOutputUtil.load_img(self.target / "{}_{}.png".format(fname, count))
-                        opt_util = SegmentOutputUtil(img, self.gen_meta(meta, img))
+                        label_path = self.target / "{}_{}.png".format(fname, count)
+                        img = SegmentOutputUtil.load_img(label_path)
+                        t_meta = self.gen_meta(meta, img)
+                        t_meta["img_path"] = os.path.abspath(img_path)
+                        opt_util = SegmentOutputUtil(img, t_meta)
                         # print(opt_util.get_result())
                         # TODO: Add road jsonify support
                         json_path = str(self.target / "{}_{}.json".format(fname, count))
                         with open(json_path, 'w') as f:
                             f.write(opt_util.get_result())
                             # TODO: Notify result
+                            self.srv.send_result(label_path, json_path)
                         count += 1
             else:
                 self.srv.logger.critical("Cannot open image path: " + str(img_path))
-
+            count += 1
             # TODO: Notify progress
+            self.srv.send_progress(total, count, img_path)

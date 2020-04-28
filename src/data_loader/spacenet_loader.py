@@ -6,6 +6,7 @@ import os.path
 import random
 from PIL import Image
 import numpy as np
+import cv2
 
 
 class SpaceNetDataLoader(BaseDataLoader):
@@ -15,13 +16,28 @@ class SpaceNetDataLoader(BaseDataLoader):
         if self.scales is not None and self.cur_scale is None:
             self.cur_scale = random.choice(self.scales)
             h, w = (int(h * self.cur_scale), int(w * self.cur_scale))
-            self.start_h = random.randint(0, h - self.crop_size)
-            self.start_w = random.randint(0, w - self.crop_size)
+            self.start_h = random.randint(0, max(h - self.crop_size, 0))
+            self.start_w = random.randint(0, max(w - self.crop_size, 0))
         else:
             h, w = (int(h * self.cur_scale), int(w * self.cur_scale))
             self.cur_scale = None
         img = img.resize((w, h), resample=Image.NEAREST)
         img = np.asarray(img, dtype=np.uint8)
+
+        # Padding
+        cp = self.crop_size
+        pad_h = (cp - (h % cp)) % cp
+        pad_w = (cp - (w % cp)) % cp
+        pad_kwargs = {
+            "top": 0,
+            "bottom": pad_h,
+            "left": 0,
+            "right": pad_w,
+            "borderType": cv2.BORDER_CONSTANT,
+        }
+
+        if pad_h > 0 or pad_w > 0:
+            img = cv2.copyMakeBorder(img, value=0, **pad_kwargs)
 
         # Cropping
         end_h = self.start_h + self.crop_size

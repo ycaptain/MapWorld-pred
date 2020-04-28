@@ -8,22 +8,17 @@ from base import BaseTrainer
 from model.deeplab.metric import SegEvaluator
 from utils import inf_loop
 import model as module_arch
-import utils.crf as postps_crf
 
 
 class DeeplabTrainer(BaseTrainer):
     def __init__(self, model, criterion, metric_ftns, config, data_loader,
                  valid_data_loader=None, len_epoch=None):
-        lr = config["optimizer"]["lr"]
-        weight_decay = config["optimizer"]["weight_decay"]
-        optimizer = torch.optim.SGD(
-            params=[{'params': model.get_1x_lr_params(), 'lr': lr, "weight_decay": weight_decay},
-                    {'params': model.get_10x_lr_params(), 'lr': lr * 10, "weight_decay": weight_decay}],
-            momentum=config["optimizer"]["momentum"],
-        )
+        lr = config["optimizer"]["args"]["lr"]
+        weight_decay = config["optimizer"]["args"]["weight_decay"]
+        trainable_params = [{'params': model.get_1x_lr_params(), 'lr': lr, "weight_decay": weight_decay},
+                            {'params': model.get_10x_lr_params(), 'lr': lr * 10, "weight_decay": weight_decay}]
+        optimizer = config.init_obj('optimizer', torch.optim, trainable_params)
         super().__init__(model, criterion, metric_ftns, optimizer, config)
-        # self.train_metrics = metric_ftns[0]
-        # self.valid_metrics = metric_ftns[0]
         if len(metric_ftns) != 1:
             raise ValueError("Only support 1 metric now.")
         if not isinstance(metric_ftns[0], SegEvaluator):
@@ -43,12 +38,6 @@ class DeeplabTrainer(BaseTrainer):
         self.do_validation = self.valid_data_loader is not None
         self.lr_scheduler = config.init_obj('lr_scheduler', module_arch.lr_entry, optimizer)
         self.log_step = int(np.sqrt(data_loader.batch_size))
-
-        self.postprocessor = None
-        if 'postprocessor' in config["tester"]:
-            module_name = config["tester"]['postprocessor']['type']
-            module_args = dict(config["tester"]['postprocessor']['args'])
-            self.postprocessor = getattr(postps_crf, module_name)(**module_args)
 
         self.logit_dir = None
         if config["tester"].get("save_logits", False):
@@ -76,11 +65,6 @@ class DeeplabTrainer(BaseTrainer):
             self.optimizer.step()
 
             self.writer.set_step((epoch - 1) * self.len_epoch + batch_idx)
-            # pred = output.data.cpu().numpy()
-            # target = target.cpu().numpy()
-            # pred = np.argmax(pred, axis=1)
-            # Add batch sample into evaluator
-            # self.train_metrics.add_batch(target, pred)
 
             if batch_idx % self.log_step == 0:
                 self.logger.debug('Train Epoch: {} {} Loss: {:.6f}'.format(
@@ -206,49 +190,4 @@ class DeeplabTrainer(BaseTrainer):
                     val_log = self.valid_metrics.result()
                     total_metrics.update(**{'val_' + k: v for k, v in val_log.items()})
 
-            # crf_metric = self.crf()
-            # total_metrics.update(**{'val_crf_' + k: v for k, v in crf_metric.items()})
-
         return total_loss, total_metrics
-
-    # def crf(self):
-    #     if self.postprocessor is None or self.logit_dir is None:
-    #         print("Postprocessor or save directory is not defined in configure file. Skipping postprocessing...")
-    #         return dict()
-    #
-    #     def process(dataset, i):
-    #         image_id, image, gt_label = dataset.__getitem__(i)
-    #
-    #         filename = os.path.join(self.logit_dir, image_id + ".npy")
-    #         try:
-    #             logit = np.load(filename)
-    #         except FileNotFoundError:
-    #             return None, None
-    #
-    #         _, H, W = image.shape
-    #         logit = torch.FloatTensor(logit)[None, ...]
-    #         logit = F.interpolate(logit, size=(H, W), mode="bilinear", align_corners=False)
-    #         prob = F.softmax(logit, dim=1)[0].numpy()
-    #
-    #         image = image.astype(np.uint8).transpose(1, 2, 0)
-    #         prob = self.postprocessor(image, prob)
-    #         label = np.argmax(prob, axis=0)
-    #
-    #         return label, gt_label
-    #
-    #     n_jobs = self.postprocessor.get_n_jobs()
-    #     if self.do_validation:
-    #         dataset = self.valid_data_loader.get_dataset()
-    #     else:
-    #         dataset = self.data_loader.get_dataset()
-    #
-    #     results = joblib.Parallel(n_jobs=n_jobs, verbose=10, pre_dispatch="all")(
-    #         [joblib.delayed(process)(dataset, i) for i in range(len(dataset))]
-    #     )
-    #
-    #     self.valid_metrics.reset()
-    #
-    #     for preds, gts in zip(*results):
-    #         self.valid_metrics.add_batch(gts, preds)
-    #
-    #     return self.valid_metrics.result()

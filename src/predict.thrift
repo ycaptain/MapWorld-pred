@@ -39,4 +39,5 @@ service MapWorldService {
     Response initialize(1: InitRequest req) throws (1: Exception e)
     Response deinit()
     Response doPred(1: PredRequest req) throws (1: Exception e)
+    Response getTask()
 }

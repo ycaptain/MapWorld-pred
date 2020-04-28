@@ -15,29 +15,22 @@ from utils.building_height import random_height
 
 class SegOptTest(unittest.TestCase):
 
-    @classmethod
-    def setUpClass(cls):
-        # preds = []
-        # pred = cls.load_img("data/FYPData/1.png")
-        pred = SegmentOutputUtil.load_img("data/FYPData/2.png")
-        # preds.append(cls.load_img("data/FYPData/2.png"))
-        # preds.append(cls.load_img("data/FYPData/3.png"))
-        # preds.append(cls.load_img("data/FYPData/4.png"))
-        # preds.append(cls.load_img("data/FYPData/5.png"))
+    def test_load_building(self):
+        pred = SegmentOutputUtil.load_img("tmp/results/0467da24_Building-Deeplab_1.png")
         w, h = pred.shape
 
-        meta = {
+        self.meta = {
             "w": w,
             "h": h
         }
 
-        cls.util = SegmentOutputUtil(pred, meta)
-        cls.pred = pred
+        self.util = SegmentOutputUtil(pred, self.meta)
+        self.pred = pred
 
     def test_bbox(self):
         cnts = self.util.get_contours(self.pred)
         bboxs = self.util.get_bboxs(cnts[0])
-        self.util.show_bbox(self.pred, bboxs)
+        self.util.show_bbox(bboxs)
 
     def test_encoding(self):
         cnts = self.util.get_contours(self.pred)
@@ -45,6 +38,7 @@ class SegOptTest(unittest.TestCase):
 
         buildings = self.util.encoding(bboxs, self.util.meta, fun_prop=random_height)
         res = json.dumps({
+            "meta": self.meta,
             "buildings": buildings,
             "road": [
                 {
@@ -94,6 +88,17 @@ class SegOptTest(unittest.TestCase):
         print(res)
         with open('test/test_res.json', 'w') as f:
             f.write(res)
+
+    def test_load_road(self):
+        pred = SegmentOutputUtil.load_img("tmp/results/0467da24_Road-Deeplab_1.png")
+        w, h = pred.shape
+        self.meta = {
+            "w": w,
+            "h": h
+        }
+
+        self.util = SegmentOutputUtil(pred, self.meta)
+        self.pred = pred
 
 
 if __name__ == '__main__':

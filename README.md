@@ -45,6 +45,7 @@ Run the following command to regenerate Thrift binding code.
 cd src
 rm -r gen-py
 thrift --gen py predict.thrift
+thrift --gen py ../../app/main.thrift # you need to clone the frontend
 ```
 
 ### Mandatory

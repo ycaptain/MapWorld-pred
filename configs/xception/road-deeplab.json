@@ -1,13 +1,13 @@
 {
-    "name": "Road-UNet",
+    "name": "Road-Deeplab",
     "n_gpu": 1,
     "log_config": "src/logger/logger_config.json",
     "save_dir": "saved/",
     "arch": {
-         "type": "UNet",
+         "type": "DeepLab",
          "args": {
-             "n_channels": 3,
-             "n_classes": 2
+             "num_classes": 2,
+             "backbone": "xception"
          }
     },
     "data_loader": {
@@ -21,7 +21,7 @@
                 "AOI_5_Khartoum"
             ],
             "data_dir": "data/FYPData/spacenet/roads",
-            "batch_size": 5,
+            "batch_size": 6,
             "shuffle": true,
             "validation_split": 0.1,
             "num_workers": 4,
@@ -47,10 +47,11 @@
         }
     ],
     "optimizer": {
-        "type": "Adam",
+        "type": "SGD",
         "args": {
-            "weight_decay": 0.0005,
-            "lr": 0.005
+            "weight_decay": 5.0e-4,
+            "lr": 0.007,
+            "momentum": 0.9
         }
     },
     "lr_scheduler": {
@@ -62,9 +63,9 @@
         }
     },
     "trainer": {
-        "type": "UNetTrainer",
+        "type": "DeeplabTrainer",
         "args": {},
-        "epochs": 300,
+        "epochs": 400,
         "save_period": 10,
         "verbosity": 2,
         "monitor": "max val_mIoU",

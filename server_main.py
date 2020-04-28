@@ -12,11 +12,10 @@ src_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "src")
 sys.path.append(src_dir)
 sys.path.append(os.path.join(src_dir, "gen-py"))
 
-from mapworld import MapWorldService
-from mapworld.ttypes import *
-
 from server import ServerMain, ModelPackLoader
 
+from mapworld import MapWorldService
+from mapworld.ttypes import *
 
 class MapWorldHandler:
     def __init__(self):
@@ -93,6 +92,17 @@ class MapWorldHandler:
         else:
             res.code = -1
             res.msg = "The server is not init."
+        return res
+
+    def getTask(self):
+        res = Response()
+        res.code = 0
+        res.msg = "The task is not running."
+        if self.srv is not None:
+            if self.srv.pred_th is not None:
+                if self.srv.pred_th.is_alive():
+                    res.code = 1
+                    res.msg = "The task is running."
         return res
 
 

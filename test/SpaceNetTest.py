@@ -50,6 +50,7 @@ class SpaceNetTestCase(unittest.TestCase):
             shuffle=False,
             validation_split=0.0,
             num_workers=0,
+            crop_size=650,
             scales=[0.5, 0.75, 1.0, 1.25, 1.5]
         )
         self.preview(dataset)
@@ -63,7 +64,8 @@ class SpaceNetTestCase(unittest.TestCase):
             shuffle=False,
             validation_split=0.0,
             num_workers=0,
-            scales=0.5,
+            crop_size=650,
+            scales=[0.5, 0.75],
             dilate_size=20,
             ignore_size=10
         )

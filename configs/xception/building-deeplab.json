@@ -1,34 +1,32 @@
 {
-    "name": "Road-UNet",
+    "name": "Building-Deeplab",
     "n_gpu": 1,
     "log_config": "src/logger/logger_config.json",
     "save_dir": "saved/",
     "arch": {
-         "type": "UNet",
+         "type": "DeepLab",
          "args": {
-             "n_channels": 3,
-             "n_classes": 2
+             "num_classes": 2,
+             "backbone": "xception"
          }
     },
     "data_loader": {
-        "type": "SpaceNetRoadDataLoader",
+        "type": "SpaceNetDataLoader",
         "args":{
-            "data_type": "road",
+            "data_type": "building",
             "data_name": [
-                "AOI_2_Vegas",
-                "AOI_3_Paris",
-                "AOI_4_Shanghai",
-                "AOI_5_Khartoum"
+                "AOI_2_Vegas_Train",
+                "AOI_3_Paris_Train",
+                "AOI_4_Shanghai_Train",
+                "AOI_5_Khartoum_Train"
             ],
-            "data_dir": "data/FYPData/spacenet/roads",
-            "batch_size": 5,
+            "data_dir": "data/FYPData/spacenet/buildings",
+            "batch_size": 6,
             "shuffle": true,
             "validation_split": 0.1,
             "num_workers": 4,
-            "scales": [0.5, 0.75],
-            "crop_size": 650,
-            "dilate_size": 20,
-            "ignore_size": 10
+            "scales": [0.75, 1.0, 1.25, 1.5],
+            "crop_size": 650
         }
     },
     "loss": {
@@ -47,10 +45,11 @@
         }
     ],
     "optimizer": {
-        "type": "Adam",
+        "type": "SGD",
         "args": {
-            "weight_decay": 0.0005,
-            "lr": 0.005
+            "weight_decay": 5.0e-4,
+            "lr": 0.007,
+            "momentum": 0.9
         }
     },
     "lr_scheduler": {
@@ -62,10 +61,10 @@
         }
     },
     "trainer": {
-        "type": "UNetTrainer",
+        "type": "DeeplabTrainer",
         "args": {},
         "epochs": 300,
-        "save_period": 10,
+        "save_period": 20,
         "verbosity": 2,
         "monitor": "max val_mIoU",
         "early_stop": 20,

@@ -4,7 +4,7 @@
         "type": "DeepLab",
         "args": {
             "num_classes": 2,
-            "backbone": "mobilenet"
+            "backbone": "xception"
         }
     },
     "metrics": [

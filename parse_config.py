@@ -35,20 +35,22 @@ class ConfigParser:
 
         self._log_dir = save_dir / 'log' / exper_name / run_id
 
-        # make directory for saving checkpoints and log.
         self.save_dir.mkdir(parents=True, exist_ok=True)
-        self.log_dir.mkdir(parents=True, exist_ok=True)
-
         # save updated config file to the checkpoint dir
         write_json(self.config, self.save_dir / 'config.json')
 
-        # configure logging module
-        setup_logging(self.log_dir, self.config.get("log_config", 'logger/logger_config.json'))
         self.log_levels = {
             0: logging.WARNING,
             1: logging.INFO,
             2: logging.DEBUG
         }
+
+    def init_log(self):
+        # make directory for saving checkpoints and log.
+        self.log_dir.mkdir(parents=True, exist_ok=True)
+
+        # configure logging module
+        setup_logging(self.log_dir, self.config.get("log_config", 'logger/logger_config.json'))
 
     @classmethod
     def from_args(cls, args, options=''):

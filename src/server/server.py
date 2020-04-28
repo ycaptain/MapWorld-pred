@@ -8,10 +8,23 @@ from parse_config import ConfigParser
 import model as module_arch
 import utils.crf as postps_crf
 
+try:
+    from mwfrontend import MapWorldMain
+    from mwfrontend.ttypes import *
+
+    enable_client = True
+except ModuleNotFoundError:
+    print("Frontend protocol not found, client functions disabled.")
+    enable_client = False
+
 
 class ServerMain:
+
     def __init__(self, client, tmp_path, n_gpu_use=1):
-        self.client = client
+        if enable_client:
+            self.client = client
+        else:
+            self.client = None
         self.n_gpu_use = n_gpu_use
 
         self.logger = None
@@ -26,9 +39,27 @@ class ServerMain:
         self.pred_th = None
         self.cfg = None
 
+    def set_prescale(self, prescale):
+        self.prescale = prescale
+
+    def set_batch_size(self, batch_size):
+        self.batch_size = batch_size
+
+    def send_progress(self, total, count, img_path):
+        res = ProgsReq(total, count, img_path)
+        self.client.NotifyProgress(res)
+
+    def send_result(self, label_path, json_path):
+        res = ResultReq(label_path, json_path)
+        self.client.NotifyResult(res)
+
     def pred(self, paths, metas, m_cfg):
         self.cfg = m_cfg
         res = Response()
+        if len(paths) != len(metas):
+            res.code = -2
+            res.msg = "The length of images and meta is not same."
+            return res
         try:
             self.device = torch.device('cuda:0' if self.n_gpu_use > 0 else 'cpu')
             torch.set_grad_enabled(False)
@@ -69,17 +100,12 @@ class ServerMain:
             else:
                 raise NotImplementedError("Model type:", m_typename, "is not supported.")
             self.pred_th.start()
+            self.pred_th.is_alive()
         except RuntimeError as e:
             res.code = -1
             res.msg = str(e)
             return res
 
         res.code = 0
-        res.msg = ""
+        res.msg = "Success"
         return res
-
-    def set_prescale(self, prescale):
-        self.prescale = prescale
-
-    def set_batch_size(self, batch_size):
-        self.batch_size = batch_size

@@ -25,8 +25,8 @@
             "shuffle": true,
             "validation_split": 0.1,
             "num_workers": 4,
-            "scales": [0.5, 0.75, 1.0, 1.25, 1.5],
-            "crop_size": 325
+            "scales": [0.75, 1.0, 1.25, 1.5],
+            "crop_size": 650
         }
     },
     "loss": {
@@ -45,10 +45,10 @@
         }
     ],
     "optimizer": {
-        "type": "RMSprop",
-        "args":{
-            "lr": 0.01,
-            "weight_decay": 1e-8
+        "type": "Adam",
+        "args": {
+            "weight_decay": 0.0005,
+            "lr": 0.005
         }
     },
     "lr_scheduler": {
@@ -83,6 +83,6 @@
             }
         },
         "save_logits": true,
-        "crop_size": 325
+        "crop_size": 650
     }
 }

@@ -14,9 +14,8 @@ def main(config):
     logger = config.get_logger('test')
 
     data_loader, model, criterion, metrics = init(config)
-    # valid_data_loader = data_loader.split_validation()
 
-    tester = config.init_obj('trainer', trains, model, criterion, metrics, config, data_loader)
+    tester = config.init_obj('trainer', trains, model, criterion, metrics, config, data_loader, valid_data_loader=None)
     total_loss, total_metrics = tester.test()
 
     n_samples = len(data_loader.sampler)

@@ -8,6 +8,8 @@ from PIL import Image
 import threading
 from pathlib import Path
 import cv2
+from urllib import request
+from urllib import parse
 
 
 class GeoLabelUtil(object):
@@ -72,6 +74,29 @@ class GeoLabelUtil(object):
             dist_img = Image.fromarray(img)
             dist_img = dist_img.convert(mode='RGB')
             dist_img.save(str(filename))
+
+        @staticmethod
+        def download_from_gmap(path, center_long, center_lat, zoom=19, size_w=600, size_h=600, type="roadmap", format="png"):
+            # https://maps.googleapis.com/maps/api/staticmap?center=36.1695402,-115.3066401&zoom=19&size=600x625&maptype=roadmap&format=png&style=feature:all|element:labels|visibility:off&key=AIzaSyA0RZ-MAiBwIrZM8NK8ORqC_gRrFjFs5Y0
+            MAP_URL = "https://maps.googleapis.com/maps/api/staticmap"
+            API_KEY = "AIzaSyA0RZ-MAiBwIrZM8NK8ORqC_gRrFjFs5Y0"
+            params = parse.urlencode({'center': "%f,%f" % (center_long, center_lat),
+                                      'zoom': zoom,
+                                      'size': "%dx%d" % (size_w, size_h+25),
+                                      'type': type,
+                                      'format': format,
+                                      'style': 'feature:all|element:labels|visibility:off',
+                                      'key': API_KEY})
+            req = request.Request(MAP_URL+"?%s" % params, method="GET")
+            with request.urlopen(req) as response, open(path, 'wb') as out_file:
+                data = response.read()
+                out_file.write(data)
+            # crop google mark
+            im = Image.open(path)
+            width, height = im.size
+            im1 = im.crop((0, 0, width, height-25))
+            im1.convert('RGB').save(path, ptimize=1)
+            print("Downloaded to %s" % path)
 
     class BuildingRenderThread(threading.Thread):
         def __init__(self, img_src, tg_img, gjpath=None, mask_img=None):

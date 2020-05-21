@@ -46,12 +46,14 @@ class ServerMain:
         self.batch_size = batch_size
 
     def send_progress(self, total, count, img_path):
-        res = ProgsReq(total, count, img_path)
-        self.client.NotifyProgress(res)
+        if self.client:
+            res = ProgsReq(total, count, img_path)
+            self.client.NotifyProgress(res)
 
     def send_result(self, label_path, json_path):
-        res = ResultReq(label_path, json_path)
-        self.client.NotifyResult(res)
+        if self.client:
+            res = ResultReq(label_path, json_path)
+            self.client.NotifyResult(res)
 
     def pred(self, paths, metas, m_cfg):
         self.cfg = m_cfg

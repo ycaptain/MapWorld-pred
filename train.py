@@ -23,7 +23,10 @@ np.random.seed(SEED)
 def main(config):
     data_loader, model, criterion, metrics = init(config)
 
-    valid_data_loader = data_loader.split_validation()
+    if hasattr(data_loader, "split_validation"):
+        valid_data_loader = data_loader.split_validation()
+    else:
+        valid_data_loader = None
     trainer = config.init_obj('trainer', trains, model, criterion, metrics,
                               config=config,
                               data_loader=data_loader,
@@ -44,7 +47,8 @@ if __name__ == '__main__':
     CustomArgs = collections.namedtuple('CustomArgs', 'flags type target')
     options = [
         CustomArgs(['--lr', '--learning_rate'], type=float, target='optimizer;args;lr'),
-        CustomArgs(['--bs', '--batch_size'], type=int, target='data_loader;args;batch_size')
+        CustomArgs(['--bs', '--batch_size'], type=int, target='data_loader;args;batch_size'),
+        CustomArgs(['--ec', '--epoch_count'], type=int, target='arch;args;epoch_count')
     ]
     config = ConfigParser.from_args(args, options)
     config.init_log()

@@ -21,7 +21,7 @@
                 "AOI_5_Khartoum_Train"
             ],
             "data_dir": "data/FYPData/spacenet/buildings",
-            "batch_size": 25,
+            "batch_size": 7,
             "shuffle": true,
             "validation_split": 0.1,
             "num_workers": 4,
@@ -48,7 +48,7 @@
         "type": "SGD",
         "args": {
             "weight_decay": 5.0e-4,
-            "lr": 0.005,
+            "lr": 0.002,
             "momentum": 0.9
         }
     },
@@ -56,7 +56,7 @@
         "type": "PolynomialLR",
         "args": {
             "step_size": 10,
-            "iter_max": 20000,
+            "iter_max": 2000,
             "power": 0.9
         }
     },

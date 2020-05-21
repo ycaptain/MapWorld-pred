@@ -1,30 +1,55 @@
 {
     "name": "City-CycleGAN",
-    "n_gpu": 1,
     "log_config": "src/logger/logger_config.json",
     "save_dir": "saved/",
     "arch": {
          "type": "CycleGANOptions",
          "args": {
+             "gpu_ids": "0",
+             "lambda_identity": 0.5,
+             "gan_mode": "lsgan",
+             "lr": 0.002,
+             "lr_policy":"linear",
+             "n_epochs": 100,
+             "n_epochs_decay": 300
          }
     },
     "data_loader": {
-        "type": "SpaceNetDataLoader",
+        "type": "CustomDatasetDataLoader",
         "args":{
-            "data_type": "building",
-            "data_name": [
-                "AOI_2_Vegas_Train",
-                "AOI_3_Paris_Train",
-                "AOI_4_Shanghai_Train",
-                "AOI_5_Khartoum_Train"
-            ],
-            "data_dir": "data/FYPData/spacenet/buildings",
-            "batch_size": 25,
-            "shuffle": true,
-            "validation_split": 0.1,
-            "num_workers": 4,
-            "scales": [0.5, 0.75, 1.0, 1.25, 1.5],
-            "crop_size": 325
+            "opt": {
+                "phase": "train",
+                "dataset_mode": "unaligned",
+                "dataroot": "data/FYPData/sat2map",
+                "batch_size": 2,
+                "max_dataset_size": Infinity,
+                "serial_batches": false,
+                "num_threads": 4,
+                "direction": "AtoB",
+                "input_nc": 3,
+                "output_nc": 3,
+                "preprocess": "resize_and_crop",
+                "load_size": 286,
+                "crop_size": 256,
+                "no_flip": false
+            }
         }
+    },
+    "trainer": {
+        "type": "CycleGANTrainer",
+        "args": {},
+        "epochs": 400,
+        "save_period": 10,
+        "verbosity": 2,
+        "monitor": "off",
+        "early_stop": 20,
+        "tensorboard": false
+    },
+    "loss": {},
+    "metrics": [],
+    "optimizer": {},
+    "lr_scheduler": {},
+    "tester": {
+
     }
 }

@@ -40,7 +40,10 @@ def init(config):
     model = config.init_obj('arch', module_arch)
 
     # get function handles of loss and metrics
-    criterion = config.init_obj('loss', module_arch.loss_entry).build_loss()
+    criterion = config.init_obj('loss', module_arch.loss_entry)
+    if criterion is not None:
+        criterion = criterion.build_loss()
+
     metrics = list()
     for met in config['metrics']:
         if isinstance(met, dict):  # class
@@ -95,3 +98,11 @@ class MetricTracker:
 
     def result(self):
         return dict(self._data.average)
+
+
+# Ref: https://stackoverflow.com/questions/2352181/how-to-use-a-dot-to-access-members-of-dictionary
+class DotDict(dict):
+    """dot.notation access to dictionary attributes"""
+    __getattr__ = dict.get
+    __setattr__ = dict.__setitem__
+    __delattr__ = dict.__delitem__

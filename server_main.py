@@ -109,7 +109,7 @@ class MapWorldHandler:
 def main():
     handler = MapWorldHandler()
     processor = MapWorldService.Processor(handler)
-    transport = TSocket.TServerSocket(host='::1', port=77971)
+    transport = TSocket.TServerSocket(host='::1', port=12435)
     tfactory = TTransport.TBufferedTransportFactory()
     pfactory = TBinaryProtocol.TBinaryProtocolFactory()
 

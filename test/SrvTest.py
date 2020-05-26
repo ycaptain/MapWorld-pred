@@ -22,7 +22,7 @@ class SrvTest(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         # Make socket
-        cls.transport = TSocket.TSocket('::1', 77971)
+        cls.transport = TSocket.TSocket('::1', 12435)
 
         # Buffering is critical. Raw sockets are very slow
         cls.transport = TTransport.TBufferedTransport(cls.transport)
@@ -43,7 +43,7 @@ class SrvTest(unittest.TestCase):
     def test_pred_building(self):
         self.transport.open()
         test_meta = GeoMeta(XY(0, 0), XY(1, -1))
-        req = PredRequest(["data/FYPData/test/tuanjiehu.png"], [test_meta], "Building-Deeplab", 1)
+        req = PredRequest(["data/FYPData/test/test1.png"], [test_meta], "Building-Deeplab", 1, batch_size=1)
         res = self.client.doPred(req)
         print(res)
         self.transport.close()

@@ -52,7 +52,7 @@ class SegPredThread(threading.Thread):
 
     def single(self, path):
         save_name = hashlib.sha1(str(path).encode("utf-8")).hexdigest()[:8]
-        image = Image.open(path)
+        image = Image.open(path).convert('RGB')
         W, H = image.size
         ps, cp = self.srv.prescale, self.srv.crop_size
         if ps != 1.0:

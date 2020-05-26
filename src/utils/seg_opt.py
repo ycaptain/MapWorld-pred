@@ -188,7 +188,7 @@ class SegmentOutputUtil:
             cnts = self.get_contours(self.pred)
             bboxs = self.get_bboxs(cnts[0])
             building = self.encoding(bboxs, self.meta, fun_prop=random_height)
-        except RuntimeError:
+        except (RuntimeError, TypeError):
             building = list()
         res = dict()
         res["meta"] = self.meta

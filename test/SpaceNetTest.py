@@ -18,7 +18,7 @@ from data_loader.spacenet_road_loader import SpaceNetRoadDataLoader
 class SpaceNetTestCase(unittest.TestCase):
 
     def preview(self, dataset):
-        kwargs = {"nrow": 10, "padding": 40}
+        kwargs = {"nrow": 4, "padding": 40}
         for i, (_, images, labels) in enumerate(dataset):
             if i == 0:
                 image = make_grid(images, pad_value=-1, **kwargs).numpy()
@@ -39,14 +39,14 @@ class SpaceNetTestCase(unittest.TestCase):
                 plt.figure(figsize=(40, 20))
                 plt.imshow(np.dstack((tiled_images[..., 2::-1], tiled_images[..., 3])), aspect='auto')
                 plt.show()
-                break
+                return
 
     def test_building_preview(self):
         dataset = SpaceNetDataLoader(
-            data_name=["AOI_3_Paris_Train"],
+            data_name=["AOI_2_Vegas_Train"],
             data_dir="data/FYPData/spacenet/buildings",
             data_type="building",
-            batch_size=100,
+            batch_size=16,
             shuffle=False,
             validation_split=0.0,
             num_workers=0,
@@ -60,7 +60,7 @@ class SpaceNetTestCase(unittest.TestCase):
             data_name=["AOI_2_Vegas"],
             data_dir="data/FYPData/spacenet/roads",
             data_type="road",
-            batch_size=100,
+            batch_size=16,
             shuffle=False,
             validation_split=0.0,
             num_workers=0,

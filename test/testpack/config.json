@@ -1,5 +1,5 @@
 {
-    "name": "Building-Deeplab",
+    "name": "Road-Deeplab",
     "arch": {
         "type": "DeepLab",
         "args": {
@@ -30,6 +30,6 @@
         },
         "crop_size": 650
     },
-    "path": "test/testpack/building_deeplab.pth",
+    "path": "test/testpack/road_deeplab.pth",
     "save_dir": "/mnt/Data/Getong/Sources/Project/MapWorld-pred/tmp/results"
 }

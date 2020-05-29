@@ -138,14 +138,15 @@ class SegPredThread(threading.Thread):
                         img = SegmentOutputUtil.load_img(label_path)
                         t_meta = self.gen_meta(meta, img)
                         t_meta["img_path"] = os.path.abspath(img_path)
-                        opt_util = SegmentOutputUtil(img, t_meta)
+                        opt_util = SegmentOutputUtil(img, t_meta, self.srv.cfg["name"])
+                        json_path = opt_util.get_result(str(self.target / "{}_{}".format(fname, count)))
                         # print(opt_util.get_result())
-                        # TODO: Add road jsonify support
-                        json_path = str(self.target / "{}_{}.json".format(fname, count))
-                        with open(json_path, 'w') as f:
-                            f.write(opt_util.get_result())
-                            # TODO: Notify result
-                            self.srv.send_result(label_path, json_path)
+                        # # TODO: Add road jsonify support
+                        # json_path = str(self.target / "{}_{}.json".format(fname, count))
+                        # with open(json_path, 'w') as f:
+                        #     f.write(opt_util.get_result())
+                        #     # TODO: Notify result
+                        self.srv.send_result(label_path, json_path)
                         count += 1
             else:
                 self.srv.logger.critical("Cannot open image path: " + str(img_path))

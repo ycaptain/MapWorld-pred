@@ -16,8 +16,8 @@ struct XY {
 }
 
 struct GeoMeta {
-  1: XY origin //Upper left
-  2: XY pixel_size
+  1: XY origin // Upper left
+  2: optional XY pixel_size
 }
 
 struct PredRequest {

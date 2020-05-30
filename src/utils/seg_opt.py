@@ -1,9 +1,11 @@
 import cv2
 import numpy as np
 import json
+import os
 
 from PIL import Image
 from utils.building_height import random_height
+from utils.util import read_json
 
 
 class SegmentOutputUtil:
@@ -233,6 +235,15 @@ class SegmentOutputUtil:
     def get_result(self, target):
         if self.f_augment:
             self.pred = self.f_augment(self.pred)
+        # load previous result
+        if os.path.isfile(target+".json"):
+            res = read_json(target+".json")
+            if not "meta" in res:
+                print("Warning: no meta in exist json file.")
+            elif self.meta != res["meta"]:
+                print("Warning: meta for the current image is not same as previous result, may result in wrong align.")
+        else:
+            res = dict()
         if self.type == "Building":
             try:
                 cnts = self.get_contours(self.pred)
@@ -240,15 +251,12 @@ class SegmentOutputUtil:
                 building = self.encoding(bboxs, self.meta, fun_prop=random_height)
             except (RuntimeError, TypeError):
                 building = list()
-            res = dict()
             res["meta"] = self.meta
             res["buildings"] = building
-
             with open(target+".json", 'w') as f:
                 f.write(json.dumps(res))
 
         elif self.type == "Road":
-            res = dict()
             res["meta"] = self.meta
             try:
                 skel = self.pred

@@ -62,6 +62,11 @@ class ServerMain:
             res.code = -2
             res.msg = "The length of images and meta is not same."
             return res
+        if self.pred_th is not None:
+            if self.pred_th.is_alive():
+                res.code = -3
+                res.msg = "There is a task running, please wait it finish."
+            return res
         try:
             self.device = torch.device('cuda:0' if self.n_gpu_use > 0 else 'cpu')
             torch.set_grad_enabled(False)

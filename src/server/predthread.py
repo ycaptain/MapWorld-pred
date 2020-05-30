@@ -93,8 +93,8 @@ class SegPredThread(threading.Thread):
                 # cv2.imwrite(str(self.target / fname), np.moveaxis(res.astype(np.uint8), 0, -1))
                 cv2.imwrite(str(self.target / fname), res.astype(np.uint8)[1])
                 # save raw img
-                fname = "{}_{}.png".format(save_name, count)
-                cv2.imwrite(str(self.target / fname), img.astype(np.uint8))
+                # fname = "{}_{}.png".format(save_name, count)
+                # cv2.imwrite(str(self.target / fname), img.astype(np.uint8))
                 count += 1
             return count
 
@@ -111,18 +111,19 @@ class SegPredThread(threading.Thread):
         if len(t_list) != 0:
             do_pred(t_list, raw_img_list, count)
 
-        return "{}_{}".format(save_name, self.srv.cfg["name"]), num_h, num_w
+        # return "{}_{}".format(save_name, self.srv.cfg["name"]), num_h, num_w
+        return save_name, num_h, num_w
 
     def gen_meta(self, meta, img):
         width, height = img.shape
         return {
             "origin.x": meta.origin.x,
             "origin.y": meta.origin.y,
-            "pixel_size.x": meta.pixel_size.x,
-            "pixel_size.y": meta.pixel_size.y,
+            # "pixel_size.x": meta.pixel_size.x,
+            # "pixel_size.y": meta.pixel_size.y,
             "w": width,
             "h": height,
-            "prescale": self.srv.prescale
+            "prescale": self.srv.prescale,
         }
 
     def run(self):
@@ -130,11 +131,14 @@ class SegPredThread(threading.Thread):
         total = len(self.imgs)
         for img_path, meta in zip(self.imgs, self.metas):
             if os.path.isfile(img_path):
+                # single prediction
                 fname, num_h, num_w = self.single(img_path)
                 count = 0
+                # proc JSON
                 for i in range(0, num_h):
                     for j in range(0, num_w):
-                        label_path = self.target / "{}_{}.png".format(fname, count)
+                        # model output image path
+                        label_path = self.target / "{}_{}_{}.png".format(fname, self.srv.cfg["name"], count)
                         img = SegmentOutputUtil.load_img(label_path)
                         t_meta = self.gen_meta(meta, img)
                         t_meta["img_path"] = os.path.abspath(img_path)
@@ -145,7 +149,6 @@ class SegPredThread(threading.Thread):
                         # json_path = str(self.target / "{}_{}.json".format(fname, count))
                         # with open(json_path, 'w') as f:
                         #     f.write(opt_util.get_result())
-                        #     # TODO: Notify result
                         self.srv.send_result(label_path, json_path)
                         count += 1
             else:

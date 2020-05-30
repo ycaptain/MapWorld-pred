@@ -43,7 +43,7 @@ class SrvTest(unittest.TestCase):
     def test_pred_building(self):
         self.transport.open()
         test_meta = GeoMeta(XY(0, 0), XY(1, -1))
-        req = PredRequest(["data/FYPData/test/tuanjiehu.png"], [test_meta], "Building-Deeplab", 1, batch_size=1)
+        req = PredRequest(["data/FYPData/spacenet/roads/AOI_2_Vegas/processed/RGB/img53.png"], [test_meta], "Building-Deeplab", 1, batch_size=1)
         res = self.client.doPred(req)
         print(res)
         self.transport.close()

@@ -83,7 +83,7 @@ class MapWorldHandler:
             else:
                 path = Path(os.path.dirname(os.path.abspath(__file__))) / "tmp" / "results"
 
-            self.srv = ServerMain(self.client, path)
+            self.srv = ServerMain(self.client, path, PredRequest.n_gpu_use)
             if PredRequest.prescale:
                 self.srv.set_prescale(PredRequest.prescale)
             if PredRequest.batch_size:

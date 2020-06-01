@@ -15,8 +15,9 @@ from utils.building_height import random_height
 
 class SegOptTest(unittest.TestCase):
 
-    def test_load_building(self):
-        pred = SegmentOutputUtil.load_img("tmp/results/0467da24_Building-Deeplab_1.png")
+    @classmethod
+    def setUpClass(self):
+        pred = SegmentOutputUtil.load_img("tmp/results/0467da24_Building-Deeplab_0.png")
         w, h = pred.shape
 
         self.meta = {
@@ -24,15 +25,15 @@ class SegOptTest(unittest.TestCase):
             "h": h
         }
 
-        self.util = SegmentOutputUtil(pred, self.meta)
-        self.pred = pred
+        self.util = SegmentOutputUtil(pred, self.meta, "Building")
+        self.pred = self.util.f_augment(pred)
 
-    def test_bbox(self):
+    def test_b_bbox(self):
         cnts = self.util.get_contours(self.pred)
         bboxs = self.util.get_bboxs(cnts[0])
         self.util.show_bbox(bboxs)
 
-    def test_encoding(self):
+    def test_c_encoding(self):
         cnts = self.util.get_contours(self.pred)
         bboxs = self.util.get_bboxs(cnts[0])
 
@@ -88,17 +89,6 @@ class SegOptTest(unittest.TestCase):
         print(res)
         with open('test/test_res.json', 'w') as f:
             f.write(res)
-
-    def test_load_road(self):
-        pred = SegmentOutputUtil.load_img("tmp/results/0467da24_Road-Deeplab_1.png")
-        w, h = pred.shape
-        self.meta = {
-            "w": w,
-            "h": h
-        }
-
-        self.util = SegmentOutputUtil(pred, self.meta)
-        self.pred = pred
 
 
 if __name__ == '__main__':

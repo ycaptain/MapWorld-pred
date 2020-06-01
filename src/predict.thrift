@@ -15,9 +15,14 @@ struct XY {
   2: double y
 }
 
+enum CycleGANType {
+    SatelliteToMap,
+    MapToSatellite
+}
+
 struct GeoMeta {
-  1: XY origin //Upper left
-  2: XY pixel_size
+  1: XY origin // Upper left
+  2: optional XY pixel_size
 }
 
 struct PredRequest {
@@ -28,6 +33,7 @@ struct PredRequest {
   5: optional string tmp_opt_path
   6: optional double prescale
   7: optional i8 batch_size
+  8: optional CycleGANType cyclegan_type
 }
 
 struct Response {

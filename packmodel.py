@@ -32,7 +32,8 @@ def main(args_parsed):
         mod_cont = dict()
         conf = l_mod[0]
         path = l_mod[1]
-        if not ensure_exist(conf) or not ensure_exist(path):
+        # if not ensure_exist(conf) or not ensure_exist(path):
+        if not ensure_exist(conf):
             continue
         try:
             cf_content = read_json(conf)

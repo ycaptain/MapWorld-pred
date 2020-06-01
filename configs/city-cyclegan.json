@@ -11,7 +11,7 @@
              "lr": 0.002,
              "lr_policy":"linear",
              "n_epochs": 100,
-             "n_epochs_decay": 300
+             "n_epochs_decay": 400
          }
     },
     "data_loader": {
@@ -20,7 +20,7 @@
             "opt": {
                 "phase": "train",
                 "dataset_mode": "unaligned",
-                "dataroot": "data/FYPData/sat2map",
+                "dataroot": "data/FYPData/sat2map_spacenet",
                 "batch_size": 2,
                 "max_dataset_size": Infinity,
                 "serial_batches": false,
@@ -49,7 +49,5 @@
     "metrics": [],
     "optimizer": {},
     "lr_scheduler": {},
-    "tester": {
-
-    }
+    "tester": {}
 }

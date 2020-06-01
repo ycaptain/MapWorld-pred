@@ -16,6 +16,21 @@ from thrift.transport import TTransport
 all_structs = []
 
 
+class CycleGANType(object):
+    SatelliteToMap = 0
+    MapToSatellite = 1
+
+    _VALUES_TO_NAMES = {
+        0: "SatelliteToMap",
+        1: "MapToSatellite",
+    }
+
+    _NAMES_TO_VALUES = {
+        "SatelliteToMap": 0,
+        "MapToSatellite": 1,
+    }
+
+
 class Exception(TException):
     """
     Attributes:
@@ -303,11 +318,12 @@ class PredRequest(object):
      - tmp_opt_path
      - prescale
      - batch_size
+     - cyclegan_type
 
     """
 
 
-    def __init__(self, imgs_path=None, imgs_meta=None, model_name=None, n_gpu_use=None, tmp_opt_path=None, prescale=None, batch_size=None,):
+    def __init__(self, imgs_path=None, imgs_meta=None, model_name=None, n_gpu_use=None, tmp_opt_path=None, prescale=None, batch_size=None, cyclegan_type=None,):
         self.imgs_path = imgs_path
         self.imgs_meta = imgs_meta
         self.model_name = model_name
@@ -315,6 +331,7 @@ class PredRequest(object):
         self.tmp_opt_path = tmp_opt_path
         self.prescale = prescale
         self.batch_size = batch_size
+        self.cyclegan_type = cyclegan_type
 
     def read(self, iprot):
         if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
@@ -371,6 +388,11 @@ class PredRequest(object):
                     self.batch_size = iprot.readByte()
                 else:
                     iprot.skip(ftype)
+            elif fid == 8:
+                if ftype == TType.I32:
+                    self.cyclegan_type = iprot.readI32()
+                else:
+                    iprot.skip(ftype)
             else:
                 iprot.skip(ftype)
             iprot.readFieldEnd()
@@ -414,6 +436,10 @@ class PredRequest(object):
         if self.batch_size is not None:
             oprot.writeFieldBegin('batch_size', TType.BYTE, 7)
             oprot.writeByte(self.batch_size)
+            oprot.writeFieldEnd()
+        if self.cyclegan_type is not None:
+            oprot.writeFieldBegin('cyclegan_type', TType.I32, 8)
+            oprot.writeI32(self.cyclegan_type)
             oprot.writeFieldEnd()
         oprot.writeFieldStop()
         oprot.writeStructEnd()
@@ -533,6 +559,7 @@ PredRequest.thrift_spec = (
     (5, TType.STRING, 'tmp_opt_path', 'UTF8', None, ),  # 5
     (6, TType.DOUBLE, 'prescale', None, None, ),  # 6
     (7, TType.BYTE, 'batch_size', None, None, ),  # 7
+    (8, TType.I32, 'cyclegan_type', None, None, ),  # 8
 )
 all_structs.append(Response)
 Response.thrift_spec = (

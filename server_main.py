@@ -17,6 +17,7 @@ from server import ServerMain, ModelPackLoader
 from mapworld import MapWorldService
 from mapworld.ttypes import *
 
+
 class MapWorldHandler:
     def __init__(self):
         self.srv = None
@@ -78,18 +79,26 @@ class MapWorldHandler:
                 if not os.path.exists(path) or not os.path.isdir(path):
                     res.code = -4
                     res.msg = "The request tmp_opt_path cannot be accessed."
-                    del self.srv
                     return res
             else:
                 path = Path(os.path.dirname(os.path.abspath(__file__))) / "tmp" / "results"
 
             self.srv = ServerMain(self.client, path)
+            if PredRequest.cyclegan_type is not None:
+                if PredRequest.model_name.split("-")[1] != "CycleGAN":
+                    del self.srv
+                    res.code = -5
+                    res.msg = "The cyclegan_type is set, but with no CycleGAN model selected."
+                    return res
+                else:
+                    self.srv.set_cyclegan_type(PredRequest.cyclegan_type)
             if PredRequest.prescale:
                 self.srv.set_prescale(PredRequest.prescale)
             if PredRequest.batch_size:
                 self.srv.set_batch_size(PredRequest.batch_size)
             res = self.srv.pred(PredRequest.imgs_path, PredRequest.imgs_meta, model)
         else:
+            del self.srv
             res.code = -1
             res.msg = "The server is not init."
         return res

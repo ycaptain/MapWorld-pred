@@ -31,13 +31,14 @@ class ServerMain:
         self.device = None
         self.model = None
         self.postprocessor = None
-        self.crop_size = 325
+        self.crop_size = 650
         self.prescale = 1.0
         self.batch_size = 4
 
         self.tmp_path = tmp_path
         self.pred_th = None
         self.cfg = None
+        self.cyclegan_type = None
 
     def set_prescale(self, prescale):
         self.prescale = prescale
@@ -66,48 +67,72 @@ class ServerMain:
             if self.pred_th.is_alive():
                 res.code = -3
                 res.msg = "There is a task running, please wait it finish."
-            return res
+                return res
         try:
-            self.device = torch.device('cuda:0' if self.n_gpu_use > 0 else 'cpu')
-            torch.set_grad_enabled(False)
-            m_cfg["save_dir"] = str(self.tmp_path)
-            config = ConfigParser(m_cfg, Path(m_cfg["path"]))
-            self.logger = config.get_logger('PredServer')
-            self.model = config.init_obj('arch', module_arch)
-            self.logger.info('Loading checkpoint: {} ...'.format(config.resume))
-            if self.n_gpu_use > 0:
-                checkpoint = torch.load(config.resume)
-            else:
-                checkpoint = torch.load(config.resume, map_location=torch.device('cpu'))
-
-            state_dict = checkpoint['state_dict']
-            if self.n_gpu_use > 1:
-                self.model = torch.nn.DataParallel(self.model)
-            self.model.load_state_dict(state_dict)
-            self.model = self.model.to(self.device)
-            self.model.eval()
-
-            if "crop_size" in config["tester"]:
-                self.crop_size = config["tester"]["crop_size"]
-
-            if 'postprocessor' in config["tester"]:
-                module_name = config["tester"]['postprocessor']['type']
-                module_args = dict(config["tester"]['postprocessor']['args'])
-                self.postprocessor = getattr(postps_crf, module_name)(**module_args)
-
-            self.tmp_path.mkdir(parents=True, exist_ok=True)
-
             m_typename = m_cfg["name"].split("-")[1]
             if m_typename == "Deeplab" or m_typename == "UNet":
                 from .predthread import SegPredThread
+                self.device = torch.device('cuda:0' if self.n_gpu_use > 0 else 'cpu')
+                torch.set_grad_enabled(False)
+                m_cfg["save_dir"] = str(self.tmp_path)
+                config = ConfigParser(m_cfg, Path(m_cfg["path"]))
+                self.logger = config.get_logger('PredServer')
+                self.model = config.init_obj('arch', module_arch)
+                self.logger.info('Loading checkpoint: {} ...'.format(config.resume))
+                if self.n_gpu_use > 1:
+                    self.model = torch.nn.DataParallel(self.model)
+                if self.n_gpu_use > 0:
+                    checkpoint = torch.load(config.resume)
+                else:
+                    checkpoint = torch.load(config.resume, map_location=torch.device('cpu'))
+
+                state_dict = checkpoint['state_dict']
+                self.model.load_state_dict(state_dict)
+                self.model = self.model.to(self.device)
+                self.model.eval()
+
+                if "crop_size" in config["tester"]:
+                    self.crop_size = config["tester"]["crop_size"]
+
+                if 'postprocessor' in config["tester"]:
+                    module_name = config["tester"]['postprocessor']['type']
+                    module_args = dict(config["tester"]['postprocessor']['args'])
+                    self.postprocessor = getattr(postps_crf, module_name)(**module_args)
+
+                self.tmp_path.mkdir(parents=True, exist_ok=True)
+
                 self.pred_th = SegPredThread(self, paths, metas, self.tmp_path)
             elif m_typename == "CycleGAN":
-                # TODO: support CycleGAN
-                raise NotImplementedError("CycleGAN is not supported now.")
+                from .predthread import CycleGANPredThread
+                from model import CycleGANOptions, CycleGANModel
+                # config = ConfigParser(m_cfg, Path(m_cfg["path"]))
+                opt = CycleGANOptions(**m_cfg["arch"]["args"])
+                opt.batch_size = self.batch_size
+                opt.serial_batches = True
+                opt.no_flip = True  # no flip;
+                opt.display_id = -1  # no visdom display; the test code saves the results to a HTML file.
+                opt.isTrain = False
+                opt.gpu_ids = []
+                for i in range(0, self.n_gpu_use):
+                    opt.gpu_ids.append(i)
+                opt.checkpoints_dir = str(self.tmp_path)
+                opt.preprocess = "none"
+                opt.direction = 'AtoB'
+                self.model = CycleGANModel(opt)
+
+                orig_save_dir = self.model.save_dir
+                self.model.save_dir = ""
+                self.model.load_networks(m_cfg["path"])
+                self.model.save_dir = orig_save_dir
+                torch.set_grad_enabled(False)
+                self.model.set_requires_grad([self.model.netG_A, self.model.netG_B], False)
+
+                self.pred_th = CycleGANPredThread(self, paths, metas, self.tmp_path)
             else:
                 raise NotImplementedError("Model type:", m_typename, "is not supported.")
+
             self.pred_th.start()
-            self.pred_th.is_alive()
+            # self.pred_th.is_alive()
         except RuntimeError as e:
             res.code = -1
             res.msg = str(e)
@@ -116,3 +141,9 @@ class ServerMain:
         res.code = 0
         res.msg = "Success"
         return res
+
+    def set_cyclegan_type(self, cyclegan_type):
+        if cyclegan_type == CycleGANType.SatelliteToMap:
+            self.cyclegan_type = "SatelliteToMap"
+        elif cyclegan_type == CycleGANType.MapToSatellite:
+            self.cyclegan_type = "MapToSatellite"

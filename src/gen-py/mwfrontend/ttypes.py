@@ -85,6 +85,7 @@ class ProgsReq(object):
 
     """
 
+
     def __init__(self, total=None, current=None, curr_filename=None,):
         self.total = total
         self.current = current

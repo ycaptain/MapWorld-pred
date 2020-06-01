@@ -20,7 +20,7 @@ except ModuleNotFoundError:
 
 class ServerMain:
 
-    def __init__(self, client, tmp_path, n_gpu_use=1):
+    def __init__(self, client, tmp_path, n_gpu_use=0):
         if enable_client:
             self.client = client
         else:

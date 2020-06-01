@@ -83,7 +83,7 @@ class MapWorldHandler:
             else:
                 path = Path(os.path.dirname(os.path.abspath(__file__))) / "tmp" / "results"
 
-            self.srv = ServerMain(self.client, path)
+            self.srv = ServerMain(self.client, path, PredRequest.n_gpu_use)
             if PredRequest.cyclegan_type is not None:
                 if PredRequest.model_name.split("-")[1] != "CycleGAN":
                     del self.srv

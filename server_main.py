@@ -16,6 +16,8 @@ from server import ServerMain, ModelPackLoader
 
 from mapworld import MapWorldService
 from mapworld.ttypes import *
+from mwfrontend import MapWorldMain
+from mwfrontend.ttypes import *
 
 
 class MapWorldHandler:
@@ -29,26 +31,26 @@ class MapWorldHandler:
 
     def initialize(self, InitRequest):
         res = Response()
-        if self.mp_loader is None:
-            mpl = ModelPackLoader()
-            if not os.path.exists(InitRequest.config_path):
-                res.code = -2
-                res.msg = "The configure file cannot be found."
-                return res
-            mpl.load_conf(InitRequest.config_path)
-            if InitRequest.fr_addr and InitRequest.fr_port:
-                # Also init client
-                self.transport = TSocket.TSocket(InitRequest.fr_addr, InitRequest.fr_port)
-                self.transport = TTransport.TBufferedTransport(self.transport)
-                self.protocol = TBinaryProtocol.TBinaryProtocol(self.transport)
-                self.client = MapWorldService.Client(self.protocol)
-                self.transport.open()
-            self.mp_loader = mpl
-            print("Config", InitRequest.config_path, "has been loaded to server.")
-            res.code = 0
-        else:
-            res.code = -1
-            res.msg = "The server has already been initialized."
+        # if self.mp_loader is None:
+        mpl = ModelPackLoader()
+        if not os.path.exists(InitRequest.config_path):
+            res.code = -2
+            res.msg = "The configure file cannot be found."
+            return res
+        mpl.load_conf(InitRequest.config_path)
+        if InitRequest.fr_addr and InitRequest.fr_port:
+            # Also init client
+            self.transport = TSocket.TSocket(InitRequest.fr_addr, InitRequest.fr_port)
+            self.transport = TTransport.TBufferedTransport(self.transport)
+            self.protocol = TBinaryProtocol.TBinaryProtocol(self.transport)
+            self.client = MapWorldMain.Client(self.protocol)
+            self.transport.open()
+        self.mp_loader = mpl
+        print("Config", InitRequest.config_path, "has been loaded to server.")
+        res.code = 0
+        # else:
+        #     res.code = -1
+        #     res.msg = "The server has already been initialized."
         return res
 
     def deinit(self):
@@ -118,7 +120,7 @@ class MapWorldHandler:
 def main():
     handler = MapWorldHandler()
     processor = MapWorldService.Processor(handler)
-    transport = TSocket.TServerSocket(host='::1', port=12435)
+    transport = TSocket.TServerSocket(host='127.0.0.1', port=8888)
     tfactory = TTransport.TBufferedTransportFactory()
     pfactory = TBinaryProtocol.TBinaryProtocolFactory()
 

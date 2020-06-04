@@ -51,12 +51,13 @@ class ServerMain:
             res = ProgsReq(total, count, img_path)
             self.client.NotifyProgress(res)
 
-    def send_result(self, label_path, json_path):
+    def send_result(self, label_path, json_path, current, total):
         if self.client:
-            res = ResultReq(label_path, json_path)
+            res = ResultReq(label_path, json_path, current, total)
             self.client.NotifyResult(res)
 
     def pred(self, paths, metas, m_cfg):
+        print('pred')
         self.cfg = m_cfg
         res = Response()
         if len(paths) != len(metas):
@@ -131,6 +132,7 @@ class ServerMain:
             else:
                 raise NotImplementedError("Model type:", m_typename, "is not supported.")
 
+            print('NotifyStartThread')
             self.pred_th.start()
             # self.pred_th.is_alive()
         except RuntimeError as e:

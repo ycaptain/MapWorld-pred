@@ -56,8 +56,9 @@ class SegPredThread(threading.Thread):
         t_list = t_list.to(self.srv.device)
         probs = self.inference(t_list, raw_img_list, self.srv.postprocessor)
 
-        # save result
+
         for res, img in zip(probs, raw_img_list):
+            # save nth result
             fname = "{}_{}_{}.png".format(save_name, self.srv.cfg["name"], count)
             # cv2.imwrite(str(self.target / fname), np.moveaxis(res.astype(np.uint8), 0, -1))
             cv2.imwrite(str(self.target / fname), res.astype(np.uint8)[1])
@@ -98,18 +99,27 @@ class SegPredThread(threading.Thread):
         t_list = list()
         raw_img_list = list()
 
+        total = math.ceil(num_h * num_w)
+        current_count = 1
         for t_img, raw_img in self.img_iter(image, cp, num_h, num_w):
+
             t_list.append(t_img)
             raw_img_list.append(raw_img)
 
             if len(t_list) >= self.srv.batch_size:
+                # TODO: batch
                 count = pred_func(t_list, raw_img_list, count, save_name)
 
                 t_list = list()
                 raw_img_list = list()
 
+            print('NotifyBatchPred')
+            self.srv.client.NotifyBatchPred(current_count, total)
+            current_count += 1
+
         if len(t_list) != 0:
             pred_func(t_list, raw_img_list, count, save_name)
+            self.srv.client.NotifyBatchPred(current_count, total)
 
         # return "{}_{}".format(save_name, self.srv.cfg["name"]), num_h, num_w
         return save_name, num_h, num_w
@@ -129,12 +139,19 @@ class SegPredThread(threading.Thread):
     def run(self):
         img_count = 0
         total = len(self.imgs)
+        current_count = 1
         for img_path, meta in zip(self.imgs, self.metas):
+            # TODO: start nth img
+            print('NotifyPredImg')
+            self.srv.client.NotifyPredImg(current_count, total)
+            current_count += 1
             if os.path.isfile(img_path):
                 # single prediction
                 fname, num_h, num_w = self.single(img_path, self.do_pred_seg)
                 count = 0
                 # proc JSON
+                result_total = num_h * num_w
+                result_current = 1
                 for i in range(0, num_h):
                     for j in range(0, num_w):
                         # model output image path
@@ -144,12 +161,15 @@ class SegPredThread(threading.Thread):
                         t_meta["img_path"] = os.path.abspath(img_path)
                         opt_util = SegmentOutputUtil(img, t_meta, self.srv.cfg["name"])
                         json_path = opt_util.get_result(str(self.target / "{}_{}".format(fname, count)))
-                        self.srv.send_result(label_path, json_path)
+                        # TODO: send_result
+                        self.srv.send_result(str(label_path), json_path, result_current, result_total)
                         count += 1
+                        result_current += 1
             else:
                 self.srv.logger.critical("Cannot open image path: " + str(img_path))
             img_count += 1
             # TODO: Notify progress
+            print('send_progress')
             self.srv.send_progress(total, img_count, img_path)
 
 
@@ -190,8 +210,14 @@ class CycleGANPredThread(SegPredThread):
     def run(self):
         img_count = 0
         total = len(self.imgs)
+        current_count = 1
         for img_path, meta in zip(self.imgs, self.metas):
             if os.path.isfile(img_path):
                 # single prediction
                 fname, num_h, num_w = self.single(img_path, self.do_pred_cycgan)
                 count = 0
+
+            img_count += 1
+            # TODO: Notify progress
+            print('send_progress')
+            self.srv.send_progress(total, img_count, img_path)

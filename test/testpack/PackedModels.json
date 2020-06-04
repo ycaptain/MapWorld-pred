@@ -1,6 +1,6 @@
 {
     "name": "PackedModels",
-    "createTime": 1590861576,
+    "createTime": 1591266145,
     "models": [
         {
             "name": "Building-Deeplab",
@@ -36,6 +36,41 @@
                 "crop_size": 650
             },
             "path": "building_deeplab.pth"
+        },
+        {
+            "name": "Building-UNet",
+            "arch": {
+                "type": "UNet",
+                "args": {
+                    "n_channels": 3,
+                    "n_classes": 2
+                }
+            },
+            "metrics": [
+                {
+                    "type": "SegEvaluator",
+                    "args": {
+                        "num_class": 2
+                    }
+                }
+            ],
+            "tester": {
+                "postprocessor": {
+                    "type": "DenseCRF",
+                    "args": {
+                        "iter_max": 10,
+                        "pos_w": 3,
+                        "pos_xy_std": 1,
+                        "bi_w": 4,
+                        "bi_xy_std": 67,
+                        "bi_rgb_std": 3,
+                        "n_jobs": 8
+                    }
+                },
+                "save_logits": true,
+                "crop_size": 650
+            },
+            "path": "building_unet.pth"
         },
         {
             "name": "Road-UNet",
@@ -112,6 +147,7 @@
             "arch": {
                 "type": "CycleGANOptions",
                 "args": {
+                    "gpu_ids": "0",
                     "lambda_identity": 0.5,
                     "gan_mode": "lsgan",
                     "lr": 0.001,

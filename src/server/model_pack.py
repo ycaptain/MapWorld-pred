@@ -20,7 +20,7 @@ class ModelPackLoader:
                 if not (self.conf_path.parents[0] / m["path"]).exists():
                     print("Model", m["name"], "path", m["path"], "is not exist.")
                     # continue
-                    m["path"] = str(self.conf_path.parents[0] / m["path"])
+                m["path"] = str(self.conf_path.parents[0] / m["path"])
 
             self.models[m["name"]] = m
 

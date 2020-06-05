@@ -25,6 +25,8 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
     print('')
     print('Functions:')
     print('  Response NotifyProgress(ProgsReq req)')
+    print('  Response NotifyPredImg(PredMidReq req)')
+    print('  Response NotifyBatchPred(PredMidReq req)')
     print('  Response NotifyResult(ResultReq req)')
     print('')
     sys.exit(0)
@@ -110,6 +112,18 @@ if cmd == 'NotifyProgress':
         print('NotifyProgress requires 1 args')
         sys.exit(1)
     pp.pprint(client.NotifyProgress(eval(args[0]),))
+
+elif cmd == 'NotifyPredImg':
+    if len(args) != 1:
+        print('NotifyPredImg requires 1 args')
+        sys.exit(1)
+    pp.pprint(client.NotifyPredImg(eval(args[0]),))
+
+elif cmd == 'NotifyBatchPred':
+    if len(args) != 1:
+        print('NotifyBatchPred requires 1 args')
+        sys.exit(1)
+    pp.pprint(client.NotifyBatchPred(eval(args[0]),))
 
 elif cmd == 'NotifyResult':
     if len(args) != 1:

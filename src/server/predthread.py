@@ -11,15 +11,16 @@ from PIL import Image
 from pathlib import Path
 
 from utils.seg_opt import SegmentOutputUtil
-
+from mwfrontend.ttypes import *
 
 class SegPredThread(threading.Thread):
     from .server import ServerMain
 
-    def __init__(self, srv: ServerMain, imgs, metas, target: Path):
+    def __init__(self, srv: ServerMain, imgs, metas, target: Path, id):
         threading.Thread.__init__(self)
         self.srv = srv
 
+        self.id = id
         self.imgs = imgs
         self.metas = metas
         self.target = target
@@ -99,7 +100,7 @@ class SegPredThread(threading.Thread):
         t_list = list()
         raw_img_list = list()
 
-        total = math.ceil(num_h * num_w)
+        total = math.ceil(num_h * num_w) + 1
         current_count = 1
         for t_img, raw_img in self.img_iter(image, cp, num_h, num_w):
 
@@ -113,13 +114,14 @@ class SegPredThread(threading.Thread):
                 t_list = list()
                 raw_img_list = list()
 
-            print('NotifyBatchPred')
-            self.srv.client.NotifyBatchPred(current_count, total)
+            print('NotifyBatchPred', current_count, total, self.id)
+            self.srv.client.NotifyBatchPred(PredMidReq(current_count, total, self.id))
             current_count += 1
 
         if len(t_list) != 0:
             pred_func(t_list, raw_img_list, count, save_name)
-            self.srv.client.NotifyBatchPred(current_count, total)
+            print('NotifyBatchPred', current_count, total, self.id)
+            self.srv.client.NotifyBatchPred(PredMidReq(current_count, total, self.id))
 
         # return "{}_{}".format(save_name, self.srv.cfg["name"]), num_h, num_w
         return save_name, num_h, num_w
@@ -142,8 +144,8 @@ class SegPredThread(threading.Thread):
         current_count = 1
         for img_path, meta in zip(self.imgs, self.metas):
             # TODO: start nth img
-            print('NotifyPredImg')
-            self.srv.client.NotifyPredImg(current_count, total)
+            print('NotifyPredImg', current_count, total, self.id)
+            self.srv.client.NotifyPredImg(PredMidReq(current_count, total, self.id))
             current_count += 1
             if os.path.isfile(img_path):
                 # single prediction
@@ -162,7 +164,8 @@ class SegPredThread(threading.Thread):
                         opt_util = SegmentOutputUtil(img, t_meta, self.srv.cfg["name"])
                         json_path = opt_util.get_result(str(self.target / "{}_{}".format(fname, count)))
                         # TODO: send_result
-                        self.srv.send_result(str(label_path), json_path, result_current, result_total)
+                        print('send_result', str(label_path), json_path, result_current, result_total, self.id)
+                        self.srv.send_result(str(label_path), json_path, result_current, result_total, self.id)
                         count += 1
                         result_current += 1
             else:
@@ -170,14 +173,16 @@ class SegPredThread(threading.Thread):
             img_count += 1
             # TODO: Notify progress
             print('send_progress')
-            self.srv.send_progress(total, img_count, img_path)
+            self.srv.send_progress(total, img_count, img_path, self.id, json_path)
+        idx = self.srv.pred_ths.index(self)
+        del self.srv.pred_ths[idx]
 
 
 class CycleGANPredThread(SegPredThread):
     from .server import ServerMain
 
-    def __init__(self, srv: ServerMain, imgs, metas, target: Path):
-        super().__init__(srv, imgs, metas, target)
+    def __init__(self, srv: ServerMain, imgs, metas, target: Path, id):
+        super().__init__(srv, imgs, metas, target, id)
 
     def do_pred_cycgan(self, t_list, raw_img_list, count, save_name):
         t_list = torch.cat(t_list)
@@ -220,4 +225,4 @@ class CycleGANPredThread(SegPredThread):
             img_count += 1
             # TODO: Notify progress
             print('send_progress')
-            self.srv.send_progress(total, img_count, img_path)
+            self.srv.send_progress(total, img_count, img_path, self.id, json_path)

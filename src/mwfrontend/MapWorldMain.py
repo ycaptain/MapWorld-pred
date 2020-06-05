@@ -19,7 +19,7 @@ all_structs = []
 
 
 class Iface(object):
-    def initialize(self, req):
+    def NotifyProgress(self, req):
         """
         Parameters:
          - req
@@ -27,10 +27,7 @@ class Iface(object):
         """
         pass
 
-    def deinit(self):
-        pass
-
-    def doPred(self, req):
+    def NotifyPredImg(self, req):
         """
         Parameters:
          - req
@@ -38,7 +35,20 @@ class Iface(object):
         """
         pass
 
-    def getTask(self):
+    def NotifyBatchPred(self, req):
+        """
+        Parameters:
+         - req
+
+        """
+        pass
+
+    def NotifyResult(self, req):
+        """
+        Parameters:
+         - req
+
+        """
         pass
 
 
@@ -49,24 +59,24 @@ class Client(Iface):
             self._oprot = oprot
         self._seqid = 0
 
-    def initialize(self, req):
+    def NotifyProgress(self, req):
         """
         Parameters:
          - req
 
         """
-        self.send_initialize(req)
-        return self.recv_initialize()
+        self.send_NotifyProgress(req)
+        return self.recv_NotifyProgress()
 
-    def send_initialize(self, req):
-        self._oprot.writeMessageBegin('initialize', TMessageType.CALL, self._seqid)
-        args = initialize_args()
+    def send_NotifyProgress(self, req):
+        self._oprot.writeMessageBegin('NotifyProgress', TMessageType.CALL, self._seqid)
+        args = NotifyProgress_args()
         args.req = req
         args.write(self._oprot)
         self._oprot.writeMessageEnd()
         self._oprot.trans.flush()
 
-    def recv_initialize(self):
+    def recv_NotifyProgress(self):
         iprot = self._iprot
         (fname, mtype, rseqid) = iprot.readMessageBegin()
         if mtype == TMessageType.EXCEPTION:
@@ -74,59 +84,31 @@ class Client(Iface):
             x.read(iprot)
             iprot.readMessageEnd()
             raise x
-        result = initialize_result()
+        result = NotifyProgress_result()
         result.read(iprot)
         iprot.readMessageEnd()
         if result.success is not None:
             return result.success
-        if result.e is not None:
-            raise result.e
-        raise TApplicationException(TApplicationException.MISSING_RESULT, "initialize failed: unknown result")
+        raise TApplicationException(TApplicationException.MISSING_RESULT, "NotifyProgress failed: unknown result")
 
-    def deinit(self):
-        self.send_deinit()
-        return self.recv_deinit()
-
-    def send_deinit(self):
-        self._oprot.writeMessageBegin('deinit', TMessageType.CALL, self._seqid)
-        args = deinit_args()
-        args.write(self._oprot)
-        self._oprot.writeMessageEnd()
-        self._oprot.trans.flush()
-
-    def recv_deinit(self):
-        iprot = self._iprot
-        (fname, mtype, rseqid) = iprot.readMessageBegin()
-        if mtype == TMessageType.EXCEPTION:
-            x = TApplicationException()
-            x.read(iprot)
-            iprot.readMessageEnd()
-            raise x
-        result = deinit_result()
-        result.read(iprot)
-        iprot.readMessageEnd()
-        if result.success is not None:
-            return result.success
-        raise TApplicationException(TApplicationException.MISSING_RESULT, "deinit failed: unknown result")
-
-    def doPred(self, req):
+    def NotifyPredImg(self, req):
         """
         Parameters:
          - req
 
         """
-        self.send_doPred(req)
-        return self.recv_doPred()
+        self.send_NotifyPredImg(req)
+        return self.recv_NotifyPredImg()
 
-    def send_doPred(self, req):
-        self._oprot.writeMessageBegin('doPred', TMessageType.CALL, self._seqid)
-        args = doPred_args()
+    def send_NotifyPredImg(self, req):
+        self._oprot.writeMessageBegin('NotifyPredImg', TMessageType.CALL, self._seqid)
+        args = NotifyPredImg_args()
         args.req = req
         args.write(self._oprot)
         self._oprot.writeMessageEnd()
         self._oprot.trans.flush()
 
-    def recv_doPred(self):
+    def recv_NotifyPredImg(self):
         iprot = self._iprot
         (fname, mtype, rseqid) = iprot.readMessageBegin()
         if mtype == TMessageType.EXCEPTION:
@@ -134,27 +116,31 @@ class Client(Iface):
             x.read(iprot)
             iprot.readMessageEnd()
             raise x
-        result = doPred_result()
+        result = NotifyPredImg_result()
         result.read(iprot)
         iprot.readMessageEnd()
         if result.success is not None:
             return result.success
-        if result.e is not None:
-            raise result.e
-        raise TApplicationException(TApplicationException.MISSING_RESULT, "doPred failed: unknown result")
+        raise TApplicationException(TApplicationException.MISSING_RESULT, "NotifyPredImg failed: unknown result")
 
-    def getTask(self):
-        self.send_getTask()
-        return self.recv_getTask()
+    def NotifyBatchPred(self, req):
+        """
+        Parameters:
+         - req
 
-    def send_getTask(self):
-        self._oprot.writeMessageBegin('getTask', TMessageType.CALL, self._seqid)
-        args = getTask_args()
+        """
+        self.send_NotifyBatchPred(req)
+        return self.recv_NotifyBatchPred()
+
+    def send_NotifyBatchPred(self, req):
+        self._oprot.writeMessageBegin('NotifyBatchPred', TMessageType.CALL, self._seqid)
+        args = NotifyBatchPred_args()
+        args.req = req
         args.write(self._oprot)
         self._oprot.writeMessageEnd()
         self._oprot.trans.flush()
 
-    def recv_getTask(self):
+    def recv_NotifyBatchPred(self):
         iprot = self._iprot
         (fname, mtype, rseqid) = iprot.readMessageBegin()
         if mtype == TMessageType.EXCEPTION:
@@ -162,22 +148,54 @@ class Client(Iface):
             x.read(iprot)
             iprot.readMessageEnd()
             raise x
-        result = getTask_result()
+        result = NotifyBatchPred_result()
         result.read(iprot)
         iprot.readMessageEnd()
         if result.success is not None:
             return result.success
-        raise TApplicationException(TApplicationException.MISSING_RESULT, "getTask failed: unknown result")
+        raise TApplicationException(TApplicationException.MISSING_RESULT, "NotifyBatchPred failed: unknown result")
+
+    def NotifyResult(self, req):
+        """
+        Parameters:
+         - req
+
+        """
+        self.send_NotifyResult(req)
+        return self.recv_NotifyResult()
+
+    def send_NotifyResult(self, req):
+        self._oprot.writeMessageBegin('NotifyResult', TMessageType.CALL, self._seqid)
+        args = NotifyResult_args()
+        args.req = req
+        args.write(self._oprot)
+        self._oprot.writeMessageEnd()
+        self._oprot.trans.flush()
+
+    def recv_NotifyResult(self):
+        iprot = self._iprot
+        (fname, mtype, rseqid) = iprot.readMessageBegin()
+        if mtype == TMessageType.EXCEPTION:
+            x = TApplicationException()
+            x.read(iprot)
+            iprot.readMessageEnd()
+            raise x
+        result = NotifyResult_result()
+        result.read(iprot)
+        iprot.readMessageEnd()
+        if result.success is not None:
+            return result.success
+        raise TApplicationException(TApplicationException.MISSING_RESULT, "NotifyResult failed: unknown result")
 
 
 class Processor(Iface, TProcessor):
     def __init__(self, handler):
         self._handler = handler
         self._processMap = {}
-        self._processMap["initialize"] = Processor.process_initialize
-        self._processMap["deinit"] = Processor.process_deinit
-        self._processMap["doPred"] = Processor.process_doPred
-        self._processMap["getTask"] = Processor.process_getTask
+        self._processMap["NotifyProgress"] = Processor.process_NotifyProgress
+        self._processMap["NotifyPredImg"] = Processor.process_NotifyPredImg
+        self._processMap["NotifyBatchPred"] = Processor.process_NotifyBatchPred
+        self._processMap["NotifyResult"] = Processor.process_NotifyResult
         self._on_message_begin = None
 
     def on_message_begin(self, func):
@@ -200,19 +218,16 @@ class Processor(Iface, TProcessor):
             self._processMap[name](self, seqid, iprot, oprot)
         return True
 
-    def process_initialize(self, seqid, iprot, oprot):
-        args = initialize_args()
+    def process_NotifyProgress(self, seqid, iprot, oprot):
+        args = NotifyProgress_args()
         args.read(iprot)
         iprot.readMessageEnd()
-        result = initialize_result()
+        result = NotifyProgress_result()
         try:
-            result.success = self._handler.initialize(args.req)
+            result.success = self._handler.NotifyProgress(args.req)
             msg_type = TMessageType.REPLY
         except TTransport.TTransportException:
             raise
-        except Exception as e:
-            msg_type = TMessageType.REPLY
-            result.e = e
         except TApplicationException as ex:
             logging.exception('TApplication exception in handler')
             msg_type = TMessageType.EXCEPTION
@@ -221,18 +236,18 @@ class Processor(Iface, TProcessor):
             logging.exception('Unexpected exception in handler')
             msg_type = TMessageType.EXCEPTION
             result = TApplicationException(TApplicationException.INTERNAL_ERROR, 'Internal error')
-        oprot.writeMessageBegin("initialize", msg_type, seqid)
+        oprot.writeMessageBegin("NotifyProgress", msg_type, seqid)
         result.write(oprot)
         oprot.writeMessageEnd()
         oprot.trans.flush()
 
-    def process_deinit(self, seqid, iprot, oprot):
-        args = deinit_args()
+    def process_NotifyPredImg(self, seqid, iprot, oprot):
+        args = NotifyPredImg_args()
         args.read(iprot)
         iprot.readMessageEnd()
-        result = deinit_result()
+        result = NotifyPredImg_result()
         try:
-            result.success = self._handler.deinit()
+            result.success = self._handler.NotifyPredImg(args.req)
             msg_type = TMessageType.REPLY
         except TTransport.TTransportException:
             raise
@@ -244,24 +259,21 @@ class Processor(Iface, TProcessor):
             logging.exception('Unexpected exception in handler')
             msg_type = TMessageType.EXCEPTION
             result = TApplicationException(TApplicationException.INTERNAL_ERROR, 'Internal error')
-        oprot.writeMessageBegin("deinit", msg_type, seqid)
+        oprot.writeMessageBegin("NotifyPredImg", msg_type, seqid)
         result.write(oprot)
         oprot.writeMessageEnd()
         oprot.trans.flush()
 
-    def process_doPred(self, seqid, iprot, oprot):
-        args = doPred_args()
+    def process_NotifyBatchPred(self, seqid, iprot, oprot):
+        args = NotifyBatchPred_args()
         args.read(iprot)
         iprot.readMessageEnd()
-        result = doPred_result()
+        result = NotifyBatchPred_result()
         try:
-            result.success = self._handler.doPred(args.req)
+            result.success = self._handler.NotifyBatchPred(args.req)
             msg_type = TMessageType.REPLY
         except TTransport.TTransportException:
             raise
-        except Exception as e:
-            msg_type = TMessageType.REPLY
-            result.e = e
         except TApplicationException as ex:
             logging.exception('TApplication exception in handler')
             msg_type = TMessageType.EXCEPTION
@@ -270,18 +282,18 @@ class Processor(Iface, TProcessor):
             logging.exception('Unexpected exception in handler')
             msg_type = TMessageType.EXCEPTION
             result = TApplicationException(TApplicationException.INTERNAL_ERROR, 'Internal error')
-        oprot.writeMessageBegin("doPred", msg_type, seqid)
+        oprot.writeMessageBegin("NotifyBatchPred", msg_type, seqid)
         result.write(oprot)
         oprot.writeMessageEnd()
         oprot.trans.flush()
 
-    def process_getTask(self, seqid, iprot, oprot):
-        args = getTask_args()
+    def process_NotifyResult(self, seqid, iprot, oprot):
+        args = NotifyResult_args()
         args.read(iprot)
         iprot.readMessageEnd()
-        result = getTask_result()
+        result = NotifyResult_result()
         try:
-            result.success = self._handler.getTask()
+            result.success = self._handler.NotifyResult(args.req)
             msg_type = TMessageType.REPLY
         except TTransport.TTransportException:
             raise
@@ -293,7 +305,7 @@ class Processor(Iface, TProcessor):
             logging.exception('Unexpected exception in handler')
             msg_type = TMessageType.EXCEPTION
             result = TApplicationException(TApplicationException.INTERNAL_ERROR, 'Internal error')
-        oprot.writeMessageBegin("getTask", msg_type, seqid)
+        oprot.writeMessageBegin("NotifyResult", msg_type, seqid)
         result.write(oprot)
         oprot.writeMessageEnd()
         oprot.trans.flush()
@@ -301,7 +313,7 @@ class Processor(Iface, TProcessor):
 # HELPER FUNCTIONS AND STRUCTURES
 
 
-class initialize_args(object):
+class NotifyProgress_args(object):
     """
     Attributes:
      - req
@@ -323,7 +335,7 @@ class initialize_args(object):
                 break
             if fid == 1:
                 if ftype == TType.STRUCT:
-                    self.req = InitRequest()
+                    self.req = ProgsReq()
                     self.req.read(iprot)
                 else:
                     iprot.skip(ftype)
@@ -336,7 +348,7 @@ class initialize_args(object):
         if oprot._fast_encode is not None and self.thrift_spec is not None:
             oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
             return
-        oprot.writeStructBegin('initialize_args')
+        oprot.writeStructBegin('NotifyProgress_args')
         if self.req is not None:
             oprot.writeFieldBegin('req', TType.STRUCT, 1)
             self.req.write(oprot)
@@ -357,132 +369,14 @@ class initialize_args(object):
 
     def __ne__(self, other):
         return not (self == other)
-all_structs.append(initialize_args)
-initialize_args.thrift_spec = (
+all_structs.append(NotifyProgress_args)
+NotifyProgress_args.thrift_spec = (
     None,  # 0
-    (1, TType.STRUCT, 'req', [InitRequest, None], None, ),  # 1
+    (1, TType.STRUCT, 'req', [ProgsReq, None], None, ),  # 1
 )
 
 
-class initialize_result(object):
-    """
-    Attributes:
-     - success
-     - e
-
-    """
-
-
-    def __init__(self, success=None, e=None,):
-        self.success = success
-        self.e = e
-
-    def read(self, iprot):
-        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
-            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
-            return
-        iprot.readStructBegin()
-        while True:
-            (fname, ftype, fid) = iprot.readFieldBegin()
-            if ftype == TType.STOP:
-                break
-            if fid == 0:
-                if ftype == TType.STRUCT:
-                    self.success = Response()
-                    self.success.read(iprot)
-                else:
-                    iprot.skip(ftype)
-            elif fid == 1:
-                if ftype == TType.STRUCT:
-                    self.e = Exception()
-                    self.e.read(iprot)
-                else:
-                    iprot.skip(ftype)
-            else:
-                iprot.skip(ftype)
-            iprot.readFieldEnd()
-        iprot.readStructEnd()
-
-    def write(self, oprot):
-        if oprot._fast_encode is not None and self.thrift_spec is not None:
-            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
-            return
-        oprot.writeStructBegin('initialize_result')
-        if self.success is not None:
-            oprot.writeFieldBegin('success', TType.STRUCT, 0)
-            self.success.write(oprot)
-            oprot.writeFieldEnd()
-        if self.e is not None:
-            oprot.writeFieldBegin('e', TType.STRUCT, 1)
-            self.e.write(oprot)
-            oprot.writeFieldEnd()
-        oprot.writeFieldStop()
-        oprot.writeStructEnd()
-
-    def validate(self):
-        return
-
-    def __repr__(self):
-        L = ['%s=%r' % (key, value)
-             for key, value in self.__dict__.items()]
-        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
-
-    def __eq__(self, other):
-        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
-
-    def __ne__(self, other):
-        return not (self == other)
-all_structs.append(initialize_result)
-initialize_result.thrift_spec = (
-    (0, TType.STRUCT, 'success', [Response, None], None, ),  # 0
-    (1, TType.STRUCT, 'e', [Exception, None], None, ),  # 1
-)
-
-
-class deinit_args(object):
-
-
-    def read(self, iprot):
-        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
-            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
-            return
-        iprot.readStructBegin()
-        while True:
-            (fname, ftype, fid) = iprot.readFieldBegin()
-            if ftype == TType.STOP:
-                break
-            else:
-                iprot.skip(ftype)
-            iprot.readFieldEnd()
-        iprot.readStructEnd()
-
-    def write(self, oprot):
-        if oprot._fast_encode is not None and self.thrift_spec is not None:
-            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
-            return
-        oprot.writeStructBegin('deinit_args')
-        oprot.writeFieldStop()
-        oprot.writeStructEnd()
-
-    def validate(self):
-        return
-
-    def __repr__(self):
-        L = ['%s=%r' % (key, value)
-             for key, value in self.__dict__.items()]
-        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
-
-    def __eq__(self, other):
-        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
-
-    def __ne__(self, other):
-        return not (self == other)
-all_structs.append(deinit_args)
-deinit_args.thrift_spec = (
-)
-
-
-class deinit_result(object):
+class NotifyProgress_result(object):
     """
     Attributes:
      - success
@@ -517,7 +411,7 @@ class deinit_result(object):
         if oprot._fast_encode is not None and self.thrift_spec is not None:
             oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
             return
-        oprot.writeStructBegin('deinit_result')
+        oprot.writeStructBegin('NotifyProgress_result')
         if self.success is not None:
             oprot.writeFieldBegin('success', TType.STRUCT, 0)
             self.success.write(oprot)
@@ -538,13 +432,13 @@ class deinit_result(object):
 
     def __ne__(self, other):
         return not (self == other)
-all_structs.append(deinit_result)
-deinit_result.thrift_spec = (
+all_structs.append(NotifyProgress_result)
+NotifyProgress_result.thrift_spec = (
     (0, TType.STRUCT, 'success', [Response, None], None, ),  # 0
 )
 
 
-class doPred_args(object):
+class NotifyPredImg_args(object):
     """
     Attributes:
      - req
@@ -566,7 +460,7 @@ class doPred_args(object):
                 break
             if fid == 1:
                 if ftype == TType.STRUCT:
-                    self.req = PredRequest()
+                    self.req = PredMidReq()
                     self.req.read(iprot)
                 else:
                     iprot.skip(ftype)
@@ -579,7 +473,7 @@ class doPred_args(object):
         if oprot._fast_encode is not None and self.thrift_spec is not None:
             oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
             return
-        oprot.writeStructBegin('doPred_args')
+        oprot.writeStructBegin('NotifyPredImg_args')
         if self.req is not None:
             oprot.writeFieldBegin('req', TType.STRUCT, 1)
             self.req.write(oprot)
@@ -600,132 +494,14 @@ class doPred_args(object):
 
     def __ne__(self, other):
         return not (self == other)
-all_structs.append(doPred_args)
-doPred_args.thrift_spec = (
+all_structs.append(NotifyPredImg_args)
+NotifyPredImg_args.thrift_spec = (
     None,  # 0
-    (1, TType.STRUCT, 'req', [PredRequest, None], None, ),  # 1
+    (1, TType.STRUCT, 'req', [PredMidReq, None], None, ),  # 1
 )
 
 
-class doPred_result(object):
-    """
-    Attributes:
-     - success
-     - e
-
-    """
-
-
-    def __init__(self, success=None, e=None,):
-        self.success = success
-        self.e = e
-
-    def read(self, iprot):
-        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
-            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
-            return
-        iprot.readStructBegin()
-        while True:
-            (fname, ftype, fid) = iprot.readFieldBegin()
-            if ftype == TType.STOP:
-                break
-            if fid == 0:
-                if ftype == TType.STRUCT:
-                    self.success = Response()
-                    self.success.read(iprot)
-                else:
-                    iprot.skip(ftype)
-            elif fid == 1:
-                if ftype == TType.STRUCT:
-                    self.e = Exception()
-                    self.e.read(iprot)
-                else:
-                    iprot.skip(ftype)
-            else:
-                iprot.skip(ftype)
-            iprot.readFieldEnd()
-        iprot.readStructEnd()
-
-    def write(self, oprot):
-        if oprot._fast_encode is not None and self.thrift_spec is not None:
-            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
-            return
-        oprot.writeStructBegin('doPred_result')
-        if self.success is not None:
-            oprot.writeFieldBegin('success', TType.STRUCT, 0)
-            self.success.write(oprot)
-            oprot.writeFieldEnd()
-        if self.e is not None:
-            oprot.writeFieldBegin('e', TType.STRUCT, 1)
-            self.e.write(oprot)
-            oprot.writeFieldEnd()
-        oprot.writeFieldStop()
-        oprot.writeStructEnd()
-
-    def validate(self):
-        return
-
-    def __repr__(self):
-        L = ['%s=%r' % (key, value)
-             for key, value in self.__dict__.items()]
-        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
-
-    def __eq__(self, other):
-        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
-
-    def __ne__(self, other):
-        return not (self == other)
-all_structs.append(doPred_result)
-doPred_result.thrift_spec = (
-    (0, TType.STRUCT, 'success', [Response, None], None, ),  # 0
-    (1, TType.STRUCT, 'e', [Exception, None], None, ),  # 1
-)
-
-
-class getTask_args(object):
-
-
-    def read(self, iprot):
-        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
-            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
-            return
-        iprot.readStructBegin()
-        while True:
-            (fname, ftype, fid) = iprot.readFieldBegin()
-            if ftype == TType.STOP:
-                break
-            else:
-                iprot.skip(ftype)
-            iprot.readFieldEnd()
-        iprot.readStructEnd()
-
-    def write(self, oprot):
-        if oprot._fast_encode is not None and self.thrift_spec is not None:
-            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
-            return
-        oprot.writeStructBegin('getTask_args')
-        oprot.writeFieldStop()
-        oprot.writeStructEnd()
-
-    def validate(self):
-        return
-
-    def __repr__(self):
-        L = ['%s=%r' % (key, value)
-             for key, value in self.__dict__.items()]
-        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
-
-    def __eq__(self, other):
-        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
-
-    def __ne__(self, other):
-        return not (self == other)
-all_structs.append(getTask_args)
-getTask_args.thrift_spec = (
-)
-
-
-class getTask_result(object):
+class NotifyPredImg_result(object):
     """
     Attributes:
      - success
@@ -760,7 +536,7 @@ class getTask_result(object):
         if oprot._fast_encode is not None and self.thrift_spec is not None:
             oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
             return
-        oprot.writeStructBegin('getTask_result')
+        oprot.writeStructBegin('NotifyPredImg_result')
         if self.success is not None:
             oprot.writeFieldBegin('success', TType.STRUCT, 0)
             self.success.write(oprot)
@@ -781,8 +557,258 @@ class getTask_result(object):
 
     def __ne__(self, other):
         return not (self == other)
-all_structs.append(getTask_result)
-getTask_result.thrift_spec = (
+all_structs.append(NotifyPredImg_result)
+NotifyPredImg_result.thrift_spec = (
+    (0, TType.STRUCT, 'success', [Response, None], None, ),  # 0
+)
+
+
+class NotifyBatchPred_args(object):
+    """
+    Attributes:
+     - req
+
+    """
+
+
+    def __init__(self, req=None,):
+        self.req = req
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.STRUCT:
+                    self.req = PredMidReq()
+                    self.req.read(iprot)
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
+            return
+        oprot.writeStructBegin('NotifyBatchPred_args')
+        if self.req is not None:
+            oprot.writeFieldBegin('req', TType.STRUCT, 1)
+            self.req.write(oprot)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, value)
+             for key, value in self.__dict__.items()]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+    def __ne__(self, other):
+        return not (self == other)
+all_structs.append(NotifyBatchPred_args)
+NotifyBatchPred_args.thrift_spec = (
+    None,  # 0
+    (1, TType.STRUCT, 'req', [PredMidReq, None], None, ),  # 1
+)
+
+
+class NotifyBatchPred_result(object):
+    """
+    Attributes:
+     - success
+
+    """
+
+
+    def __init__(self, success=None,):
+        self.success = success
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 0:
+                if ftype == TType.STRUCT:
+                    self.success = Response()
+                    self.success.read(iprot)
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
+            return
+        oprot.writeStructBegin('NotifyBatchPred_result')
+        if self.success is not None:
+            oprot.writeFieldBegin('success', TType.STRUCT, 0)
+            self.success.write(oprot)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, value)
+             for key, value in self.__dict__.items()]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+    def __ne__(self, other):
+        return not (self == other)
+all_structs.append(NotifyBatchPred_result)
+NotifyBatchPred_result.thrift_spec = (
+    (0, TType.STRUCT, 'success', [Response, None], None, ),  # 0
+)
+
+
+class NotifyResult_args(object):
+    """
+    Attributes:
+     - req
+
+    """
+
+
+    def __init__(self, req=None,):
+        self.req = req
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.STRUCT:
+                    self.req = ResultReq()
+                    self.req.read(iprot)
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
+            return
+        oprot.writeStructBegin('NotifyResult_args')
+        if self.req is not None:
+            oprot.writeFieldBegin('req', TType.STRUCT, 1)
+            self.req.write(oprot)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, value)
+             for key, value in self.__dict__.items()]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+    def __ne__(self, other):
+        return not (self == other)
+all_structs.append(NotifyResult_args)
+NotifyResult_args.thrift_spec = (
+    None,  # 0
+    (1, TType.STRUCT, 'req', [ResultReq, None], None, ),  # 1
+)
+
+
+class NotifyResult_result(object):
+    """
+    Attributes:
+     - success
+
+    """
+
+
+    def __init__(self, success=None,):
+        self.success = success
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 0:
+                if ftype == TType.STRUCT:
+                    self.success = Response()
+                    self.success.read(iprot)
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
+            return
+        oprot.writeStructBegin('NotifyResult_result')
+        if self.success is not None:
+            oprot.writeFieldBegin('success', TType.STRUCT, 0)
+            self.success.write(oprot)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, value)
+             for key, value in self.__dict__.items()]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+    def __ne__(self, other):
+        return not (self == other)
+all_structs.append(NotifyResult_result)
+NotifyResult_result.thrift_spec = (
     (0, TType.STRUCT, 'success', [Response, None], None, ),  # 0
 )
 fix_spec(all_structs)

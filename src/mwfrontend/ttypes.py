@@ -82,14 +82,18 @@ class ProgsReq(object):
      - total
      - current
      - curr_filename
+     - id
+     - json_path
 
     """
 
 
-    def __init__(self, total=None, current=None, curr_filename=None,):
+    def __init__(self, total=None, current=None, curr_filename=None, id=None, json_path=None,):
         self.total = total
         self.current = current
         self.curr_filename = curr_filename
+        self.id = id
+        self.json_path = json_path
 
     def read(self, iprot):
         if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
@@ -115,6 +119,16 @@ class ProgsReq(object):
                     self.curr_filename = iprot.readString().decode('utf-8') if sys.version_info[0] == 2 else iprot.readString()
                 else:
                     iprot.skip(ftype)
+            elif fid == 4:
+                if ftype == TType.STRING:
+                    self.id = iprot.readString().decode('utf-8') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 5:
+                if ftype == TType.STRING:
+                    self.json_path = iprot.readString().decode('utf-8') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
             else:
                 iprot.skip(ftype)
             iprot.readFieldEnd()
@@ -136,6 +150,14 @@ class ProgsReq(object):
         if self.curr_filename is not None:
             oprot.writeFieldBegin('curr_filename', TType.STRING, 3)
             oprot.writeString(self.curr_filename.encode('utf-8') if sys.version_info[0] == 2 else self.curr_filename)
+            oprot.writeFieldEnd()
+        if self.id is not None:
+            oprot.writeFieldBegin('id', TType.STRING, 4)
+            oprot.writeString(self.id.encode('utf-8') if sys.version_info[0] == 2 else self.id)
+            oprot.writeFieldEnd()
+        if self.json_path is not None:
+            oprot.writeFieldBegin('json_path', TType.STRING, 5)
+            oprot.writeString(self.json_path.encode('utf-8') if sys.version_info[0] == 2 else self.json_path)
             oprot.writeFieldEnd()
         oprot.writeFieldStop()
         oprot.writeStructEnd()
@@ -160,13 +182,19 @@ class ResultReq(object):
     Attributes:
      - label_path
      - json_path
+     - current
+     - total
+     - id
 
     """
 
 
-    def __init__(self, label_path=None, json_path=None,):
+    def __init__(self, label_path=None, json_path=None, current=None, total=None, id=None,):
         self.label_path = label_path
         self.json_path = json_path
+        self.current = current
+        self.total = total
+        self.id = id
 
     def read(self, iprot):
         if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
@@ -187,6 +215,21 @@ class ResultReq(object):
                     self.json_path = iprot.readString().decode('utf-8') if sys.version_info[0] == 2 else iprot.readString()
                 else:
                     iprot.skip(ftype)
+            elif fid == 3:
+                if ftype == TType.BYTE:
+                    self.current = iprot.readByte()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 4:
+                if ftype == TType.BYTE:
+                    self.total = iprot.readByte()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 5:
+                if ftype == TType.STRING:
+                    self.id = iprot.readString().decode('utf-8') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
             else:
                 iprot.skip(ftype)
             iprot.readFieldEnd()
@@ -204,6 +247,18 @@ class ResultReq(object):
         if self.json_path is not None:
             oprot.writeFieldBegin('json_path', TType.STRING, 2)
             oprot.writeString(self.json_path.encode('utf-8') if sys.version_info[0] == 2 else self.json_path)
+            oprot.writeFieldEnd()
+        if self.current is not None:
+            oprot.writeFieldBegin('current', TType.BYTE, 3)
+            oprot.writeByte(self.current)
+            oprot.writeFieldEnd()
+        if self.total is not None:
+            oprot.writeFieldBegin('total', TType.BYTE, 4)
+            oprot.writeByte(self.total)
+            oprot.writeFieldEnd()
+        if self.id is not None:
+            oprot.writeFieldBegin('id', TType.STRING, 5)
+            oprot.writeString(self.id.encode('utf-8') if sys.version_info[0] == 2 else self.id)
             oprot.writeFieldEnd()
         oprot.writeFieldStop()
         oprot.writeStructEnd()
@@ -289,6 +344,85 @@ class Response(object):
 
     def __ne__(self, other):
         return not (self == other)
+
+
+class PredMidReq(object):
+    """
+    Attributes:
+     - count
+     - total
+     - id
+
+    """
+
+
+    def __init__(self, count=None, total=None, id=None,):
+        self.count = count
+        self.total = total
+        self.id = id
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.BYTE:
+                    self.count = iprot.readByte()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 2:
+                if ftype == TType.BYTE:
+                    self.total = iprot.readByte()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 3:
+                if ftype == TType.STRING:
+                    self.id = iprot.readString().decode('utf-8') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
+            return
+        oprot.writeStructBegin('PredMidReq')
+        if self.count is not None:
+            oprot.writeFieldBegin('count', TType.BYTE, 1)
+            oprot.writeByte(self.count)
+            oprot.writeFieldEnd()
+        if self.total is not None:
+            oprot.writeFieldBegin('total', TType.BYTE, 2)
+            oprot.writeByte(self.total)
+            oprot.writeFieldEnd()
+        if self.id is not None:
+            oprot.writeFieldBegin('id', TType.STRING, 3)
+            oprot.writeString(self.id.encode('utf-8') if sys.version_info[0] == 2 else self.id)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, value)
+             for key, value in self.__dict__.items()]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+    def __ne__(self, other):
+        return not (self == other)
 all_structs.append(Exception)
 Exception.thrift_spec = (
     None,  # 0
@@ -300,18 +434,30 @@ ProgsReq.thrift_spec = (
     (1, TType.I32, 'total', None, None, ),  # 1
     (2, TType.I32, 'current', None, None, ),  # 2
     (3, TType.STRING, 'curr_filename', 'UTF8', None, ),  # 3
+    (4, TType.STRING, 'id', 'UTF8', None, ),  # 4
+    (5, TType.STRING, 'json_path', 'UTF8', None, ),  # 5
 )
 all_structs.append(ResultReq)
 ResultReq.thrift_spec = (
     None,  # 0
     (1, TType.STRING, 'label_path', 'UTF8', None, ),  # 1
     (2, TType.STRING, 'json_path', 'UTF8', None, ),  # 2
+    (3, TType.BYTE, 'current', None, None, ),  # 3
+    (4, TType.BYTE, 'total', None, None, ),  # 4
+    (5, TType.STRING, 'id', 'UTF8', None, ),  # 5
 )
 all_structs.append(Response)
 Response.thrift_spec = (
     None,  # 0
     (1, TType.BYTE, 'code', None, None, ),  # 1
     (2, TType.STRING, 'msg', 'UTF8', None, ),  # 2
+)
+all_structs.append(PredMidReq)
+PredMidReq.thrift_spec = (
+    None,  # 0
+    (1, TType.BYTE, 'count', None, None, ),  # 1
+    (2, TType.BYTE, 'total', None, None, ),  # 2
+    (3, TType.STRING, 'id', 'UTF8', None, ),  # 3
 )
 fix_spec(all_structs)
 del all_structs

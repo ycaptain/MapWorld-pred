@@ -209,7 +209,7 @@ class SegmentOutputUtil:
         # flip y axis
         y = meta["h"]
         sc[1] = y - sc[1]
-        sc = sc * 0.1
+        # sc = sc * 0.1
         return sc
 
     @staticmethod

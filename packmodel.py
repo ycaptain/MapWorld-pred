@@ -39,7 +39,7 @@ def main(args_parsed):
             cf_content = read_json(conf)
             for sec in ("name", "arch", "metrics", "tester"):
                 mod_cont[sec] = cf_content[sec]
-            mod_cont["path"] = path
+            mod_cont["path"] = os.path.basename(path)
             # copy model & rename
 
             mods.append(mod_cont)

@@ -10,7 +10,7 @@ class CycleGANOptions:
         self.gpu_ids = []
         for str_id in str_ids:
             id = int(str_id)
-            if id >= 0:
+            if id > 0:
                 self.gpu_ids.append(id)
         if len(self.gpu_ids) > 0:
             torch.cuda.set_device(self.gpu_ids[0])
